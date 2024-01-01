@@ -1,0 +1,1 @@
+pip install customtkinter requests matplotlib plyer pystray pillow beautifulsoup4 selenium
