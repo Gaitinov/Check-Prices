@@ -1,12 +1,8 @@
 root - INFO - Логирование началось самый старт
-root - INFO - Драйвер запушен
-root - INFO - Драйвер запушен
 root - INFO - Логирование началось свернуто
 root - INFO - Запущен поток
 root - INFO - Логирование началось tray основа
-pystray._base - ERROR - An error occurred in the main loop
-Traceback (most recent call last):
-  File "C:\Users\Shorek\AppData\Local\Programs\Python\Python311\Lib\site-packages\pystray\_win32.py", line 146, in _mainloop
-    r = win32.GetMessage(lpmsg, None, 0, 0)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-KeyboardInterrupt
+root - INFO - Update start
+root - INFO - Драйвер запушен
+root - INFO - Драйвер запушен
+root - INFO - Price change detected: 263184 -> 262997
