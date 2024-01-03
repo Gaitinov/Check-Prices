@@ -1,0 +1,2 @@
+root - INFO - Логирование началось самый старт
+root - ERROR - Произошла ошибка: couldn't open "images/add.gif": no such file or directory
