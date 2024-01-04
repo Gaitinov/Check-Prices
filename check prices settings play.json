@@ -99,10 +99,6 @@
   },
   {
    "optionDest": "hiddenimports",
-   "value": "plyer"
-  },
-  {
-   "optionDest": "hiddenimports",
    "value": "plotly"
   },
   {
@@ -112,6 +108,10 @@
   {
    "optionDest": "datas",
    "value": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices/.venv/Lib/site-packages/customtkinter;customtkinter/"
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices/.venv/Lib/site-packages/plyer;plyer/"
   }
  ],
  "nonPyinstallerOptions": {
