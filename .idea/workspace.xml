@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c8f08415-6f9a-4c16-b453-be851d96be03" name="Changes" comment="">
+    <list default="true" id="c8f08415-6f9a-4c16-b453-be851d96be03" name="Changes" comment="Json playwright">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CK_prices/Check prices.spec" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CK_prices/modules/data/tab.db" beforeDir="false" afterPath="$PROJECT_DIR$/CK_prices/modules/data/tab.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/check prices settings play.json" beforeDir="false" afterPath="$PROJECT_DIR$/check prices settings play.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.log" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,11 +52,17 @@
     "Python.start.pyw.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Merging CP",
+    "git-widget-placeholder": "CP",
     "last_opened_file_path": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Shorek\Desktop\Check-Prices\CK_prices" />
+      <recent name="C:\Users\Shorek\Desktop\Check-Prices\CK_prices\.venv" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -75,6 +79,30 @@
       <option name="presentableId" value="Default" />
       <updated>1704320339401</updated>
     </task>
+    <task id="LOCAL-00001" summary="Json playwright">
+      <option name="closed" value="true" />
+      <created>1704372974527</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1704372974527</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Json playwright" />
+    <option name="LAST_COMMIT_MESSAGE" value="Json playwright" />
   </component>
 </project>
