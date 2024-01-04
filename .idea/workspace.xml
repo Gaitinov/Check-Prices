@@ -6,16 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="c8f08415-6f9a-4c16-b453-be851d96be03" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Check Prices_f_1.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Check_Prices_f.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CK_prices/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/CK_prices/app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CK_prices/Check prices.spec" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/CK_prices/modules/data/tab.db" beforeDir="false" afterPath="$PROJECT_DIR$/CK_prices/modules/data/tab.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pip.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/check prices settings play.json" beforeDir="false" afterPath="$PROJECT_DIR$/check prices settings play.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +54,7 @@
     "Python.start.pyw.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "CP",
+    "git-widget-placeholder": "Merging CP",
     "last_opened_file_path": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }

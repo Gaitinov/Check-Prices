@@ -7,7 +7,7 @@
   },
   {
    "optionDest": "filenames",
-   "value": "C:/Users/Shorek/Desktop/Check_Prices_f/CK_prices/start.pyw"
+   "value": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices/start.pyw"
   },
   {
    "optionDest": "onefile",
@@ -19,7 +19,7 @@
   },
   {
    "optionDest": "icon_file",
-   "value": "C:/Users/Shorek/Desktop/Check_Prices_f/CK_prices/images/icon.ico"
+   "value": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices/images/icon.ico"
   },
   {
    "optionDest": "ascii",
@@ -87,31 +87,31 @@
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Shorek/Desktop/Check_Prices_f/CK_prices/images;images/"
+   "value": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices/images;images/"
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Shorek/Desktop/Check_Prices_f/CK_prices/modules/data;data/"
+   "value": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices/modules/data;data/"
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Shorek/Desktop/Check_Prices_f/CK_prices/modules;modules/"
+   "value": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices/modules;modules/"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "plyer"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "plotly"
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": "_plotly_utils"
   },
   {
    "optionDest": "datas",
-   "value": "C:/Users/Shorek/Desktop/Check_Prices_f/CK_prices/.venv/Lib/site-packages/customtkinter;customtkinter/"
-  },
-  {
-   "optionDest": "datas",
-   "value": "C:/Users/Shorek/Desktop/Check_Prices_f/CK_prices/.venv/Lib/site-packages/plotly;plotly/"
-  },
-  {
-   "optionDest": "datas",
-   "value": "C:/Users/Shorek/Desktop/Check_Prices_f/CK_prices/.venv/Lib/site-packages/_plotly_utils;_plotly_utils/"
-  },
-  {
-   "optionDest": "datas",
-   "value": "C:/Users/Shorek/Desktop/Check_Prices_f/CK_prices/.venv/Lib/site-packages/plyer;plyer/"
+   "value": "C:/Users/Shorek/Desktop/Check-Prices/CK_prices/.venv/Lib/site-packages/customtkinter;customtkinter/"
   }
  ],
  "nonPyinstallerOptions": {
