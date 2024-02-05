@@ -3,3 +3,4 @@ CK_prices/.venv/
 output/
 CK_prices/app.log
 CK_prices/modules/__pycache__/
+CK_prices/graph.html
