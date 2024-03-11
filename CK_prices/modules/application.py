@@ -86,19 +86,23 @@ class Application(tkinter.Tk):
 
     def exitstray(self):
         logging.info('Логирование началось свернуто')
-        def action():
+
+        def action(icon, item):
             try:
                 logging.info("Поток остановлен")
                 print("Поток остановлен")
                 self.stop_event.set()
-                self.countter = 1
                 self.deiconify()
-                self.mainloop()
+                self.icon.stop()
                 self.load_data()
-                logging.info('Логирование началось разворачивание')  # Запись по умолчанию
+                self.lift()  # Поднимаем окно на передний план
+                self.focus_force()  # Принудительно устанавливаем фокус на окне
+                logging.info('Логирование началось разворачивание')
             except Exception as e:
                 logging.error("Произошла ошибка: %s", e)
 
+        def exitall(icon, item):
+            os._exit(0)
         def notifyex():
             notification.notify(
                 title="Check prices",
@@ -107,22 +111,17 @@ class Application(tkinter.Tk):
                 timeout=10,
             )
 
-        def exitall():
-            os._exit(0)
-
         try:
             if self.schprocess is None or not self.schprocess.is_alive():
                 self.stop_event = threading.Event()
                 self.schprocess = threading.Thread(target=self.sch)
                 self.schprocess.start()
-            logging.info('Логирование началось tray основа')  # Запись по умолчанию
+            logging.info('Логирование началось tray основа')
             self.withdraw()
             image = Image.open("images/icon.ico")
-            menu = (item('Развернуть', action), item('Выйти', exitall))
-            icon = pystray.Icon("name", image, "Check price", menu)
-            if self.countter == 1:
-                icon.stop()
-            icon.run()
+            self.icon = pystray.Icon("name", image, "Check price",
+                                     menu=pystray.Menu(item('Развернуть', action), item('Выйти', exitall)))
+            self.icon.run()
         except Exception as e:
             logging.error("Произошла ошибка: %s", e)
 
