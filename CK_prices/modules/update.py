@@ -3,7 +3,6 @@ import logging
 from bs4 import BeautifulSoup as BS
 from datetime import datetime
 from modules.driver import setup_driver
-import time as tm
 import sqlite3
 import os
 import sys

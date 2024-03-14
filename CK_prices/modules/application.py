@@ -8,6 +8,7 @@ import sys
 import requests
 import webbrowser
 import os
+import configparser
 import plotly.graph_objects as go
 from plyer import notification
 from pystray import MenuItem as item
@@ -22,6 +23,13 @@ from modules.record import Recordlink
 from modules.driver import setup_driver
 from modules.update import update
 
+
+config = configparser.ConfigParser()
+config.read('settings.ini')
+
+# Получение настройки
+interval = config.getint('DEFAULT', 'check_price_interval')
+check_price_interval = interval
 
 class Application(tkinter.Tk):
     app_title = "Учёт цен"
@@ -54,6 +62,17 @@ class Application(tkinter.Tk):
             self.create_widgets()
             self.title(Application.app_title)
             self.iconbitmap(r"images/icon.ico")
+
+            # Добавляем эти строки для центрирования окна и вывода его поверх других
+            self.update_idletasks()  # Обновление состояния окна
+            window_width = self.winfo_reqwidth()
+            window_height = self.winfo_reqheight()
+            position_right = int(self.winfo_screenwidth() / 2 - window_width / 2)
+            position_down = int(self.winfo_screenheight() / 2 - window_height / 2)
+            self.geometry(f"{window_width}x{window_height}+{position_right}+{position_down}")
+            self.attributes('-topmost', True)  # Поверх всех окон
+            self.after_idle(self.attributes, '-topmost', False)  # Затем возвращаем обычный режим
+
             self.protocol("WM_DELETE_WINDOW", self.exitstray)
             self.mainloop()
             logging.info('Логирование началось init')  # Запись по умолчанию
@@ -66,7 +85,7 @@ class Application(tkinter.Tk):
             logging.info("Запущен поток")
             print("Запущен поток")
             while not self.stop_event.is_set():
-                self.stop_event.wait(60)
+                self.stop_event.wait(check_price_interval)
                 if self.stop_event.is_set():
                     logging.info("Поток break")
                     print("Поток break")
@@ -85,9 +104,9 @@ class Application(tkinter.Tk):
             logging.error("Произошла ошибка: %s", e)
 
     def exitstray(self):
-        logging.info('Логирование началось свернуто')
+        logging.info('Логирование началось: свернуто')
 
-        def action(icon, item):
+        def action():
             try:
                 logging.info("Поток остановлен")
                 print("Поток остановлен")
@@ -162,6 +181,8 @@ class Application(tkinter.Tk):
         helpmenu = tkinter.Menu(mainmenu, tearoff=False)
         helpmenu.add_command(label="О программе...", command=self.show_info)
         mainmenu.add_cascade(label="Справка", menu=helpmenu)
+        mainmenu.add_command(label="Настройки", command=self.open_settings)
+
 
         self.search = tkinter.StringVar()
         self.search.set("")
@@ -315,6 +336,9 @@ class Application(tkinter.Tk):
         apps = Window()
         apps.mainloop()
 
+    def open_settings(self):
+        settings = Settings()
+        settings.mainloop()
     def update(self):
         cur = self.con.cursor()
         link = cur.execute(f"select link from items").fetchall()
@@ -616,3 +640,55 @@ class Window(tkinter.Toplevel):
     def show_info(self):
         tkinter.messagebox.showinfo(Application.app_title,
                                     "© Учёт цен, 2022 г.", parent=self)
+
+
+class Settings(tkinter.Toplevel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.init_ui()
+        self.load_current_value()
+
+    def init_ui(self):
+        self.title("Настройки")
+        self.geometry(
+            f"600x300+{self.winfo_screenwidth() // 2 - self.winfo_reqwidth() // 2}+{self.winfo_screenheight() // 2 - self.winfo_reqheight() // 2}")
+
+        # Применение элементов customtkinter для улучшения дизайна
+        self.configure(bg='#f0f0f0')
+
+        # Использование корректного аргумента для задания шрифта
+        self.label = ct.CTkLabel(self, text="Введите новое значение интервала проверки цен (в секундах) в трее:")
+        self.label.pack(pady=10)
+
+        self.entry = ct.CTkEntry(self, width=200, corner_radius=10)
+        self.entry.pack(pady=5)
+
+        self.button = ct.CTkButton(self, text="Сохранить", command=self.save_value)
+        self.button.pack(pady=10)
+
+
+    def load_current_value(self):
+        # Загрузка и установка текущего значения
+        config = configparser.ConfigParser()
+        config.read('settings.ini')
+        current_value = config.get('DEFAULT', 'CHECK_PRICE_INTERVAL', fallback='Введите значение')
+        self.entry.insert(0, current_value)
+    def save_value(self):
+        value = self.entry.get()
+        try:
+            value_int = int(value)
+            if value_int <= 60 or value_int > 100000:
+                raise ValueError
+            config = configparser.ConfigParser()
+            config.read('settings.ini')
+            config.set('DEFAULT', 'CHECK_PRICE_INTERVAL', value)
+            with open('settings.ini', 'w') as configfile:
+                config.write(configfile)
+            os.execv(sys.executable, ['python'] + sys.argv)
+            self.destroy()
+        except ValueError:
+            tkinter.messagebox.showerror("Ошибка", "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000")
+
+
+
+
