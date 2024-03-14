@@ -283,9 +283,6 @@ class Application(tkinter.Tk):
                    "information": self.trwPB.set(r, column="information")}
             Record(parent=self, record=rec)
 
-
-    # ...
-
     def create_graph(self):
         r = self.trwPB.focus()
         if r:
