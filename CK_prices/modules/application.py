@@ -234,9 +234,8 @@ class Application(tkinter.Tk):
 
         self.trwPB.bind("<Double-1>", self.on_double_click)
 
-
-        button = ct.CTkButton(frm, text="Проверить данные", command=self.update)
-        button.grid(row=0, column=3, padx=20, pady=5)
+        self.update_button = ct.CTkButton(frm, text="Проверить данные", command=self.update)
+        self.update_button.grid(row=0, column=3, padx=20, pady=5)
 
         button = ct.CTkButton(frm, text="Товары", command=self.newwindow)
         button.grid(row=0, column=4, padx=20, pady=5)
@@ -339,8 +338,31 @@ class Application(tkinter.Tk):
     def open_settings(self):
         settings = Settings()
         settings.mainloop()
+
     def update(self):
-        cur = self.con.cursor()
+        self.update_button.configure(text="Проверка...", state="disabled")
+        update_thread = threading.Thread(target=self.update_logic)
+        update_thread.start()
+
+    def update_complete_callback(self):
+        self.update_button.configure(text="Проверить данные", state="normal")
+        self.load_data()
+
+    def update_logic(self):
+        if getattr(sys, 'frozen', False):
+            dir_path = sys._MEIPASS
+        else:
+            dir_path = os.path.dirname(os.path.abspath(__file__))
+
+        db_dir = os.path.join(dir_path, 'data')
+
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir)
+
+        db_path = os.path.join(db_dir, 'tab.db')
+
+        con = sqlite3.connect(db_path)
+        cur = con.cursor()
         link = cur.execute(f"select link from items").fetchall()
         link = ([x[0] for x in link])
         link_count = len(link)
@@ -456,8 +478,8 @@ class Application(tkinter.Tk):
         else:
             tkinter.messagebox.showinfo("Уведомление",
                                         "Цены изменились", parent=self)
-        self.con.commit()
-        self.load_data()
+        con.commit()
+        self.after(0, self.update_complete_callback)
 
 
 class Window(tkinter.Toplevel):
@@ -668,7 +690,6 @@ class Settings(tkinter.Toplevel):
 
 
     def load_current_value(self):
-        # Загрузка и установка текущего значения
         config = configparser.ConfigParser()
         config.read('settings.ini')
         current_value = config.get('DEFAULT', 'CHECK_PRICE_INTERVAL', fallback='Введите значение')
