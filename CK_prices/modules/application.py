@@ -84,20 +84,18 @@ class Application(tkinter.Tk):
         try:
             logging.info("Запущен поток")
             print("Запущен поток")
+            threadupdate = None
             while not self.stop_event.is_set():
                 self.stop_event.wait(check_price_interval)
                 if self.stop_event.is_set():
                     logging.info("Поток break")
                     print("Поток break")
                     break
-                # Создание потока
-                thread = threading.Thread(target=update)
 
-                # Установка потока как демона
-                thread.daemon = True
-
-                # Запуск потока
-                thread.start()
+                if threadupdate is None or not threadupdate.is_alive():
+                    threadupdate = threading.Thread(target=update)
+                    threadupdate.daemon = True
+                    threadupdate.start()
 
             logging.info('Логирование началось (поток)')  # Запись по умолчанию
         except Exception as e:
@@ -695,7 +693,7 @@ class Settings(tkinter.Toplevel):
         value = self.entry.get()
         try:
             value_int = int(value)
-            if value_int <= 60 or value_int > 100000:
+            if value_int <= 59 or value_int > 100000:
                 raise ValueError
             config = configparser.ConfigParser()
             config.read('settings.ini')
