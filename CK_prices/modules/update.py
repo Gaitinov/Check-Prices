@@ -1,5 +1,6 @@
 import requests
 import logging
+import configparser
 from bs4 import BeautifulSoup as BS
 from datetime import datetime
 from modules.driver import setup_driver
@@ -7,6 +8,12 @@ import sqlite3
 import os
 import sys
 from plyer import notification
+
+config = configparser.ConfigParser()
+config.read('settings.ini')
+
+interval = config.getint('DEFAULT', 'price_range_notification')
+price_range_notification = interval
 
 def notifyex():
     notification.notify(
@@ -39,6 +46,7 @@ def update():
     link = ([x[0] for x in link])
     link_count = len(link)
     changecount = 0
+    price_interval = 0
 
 
     for i in range(link_count):
@@ -134,6 +142,14 @@ def update():
                             "values (?, ? ,? , ? , ?, ?)",
                             (id_item, item, price, time, link[i], information))
                 changecount = 1
+                price_interval_by_product = lastprice - price
+                # перевод интервала в положительное число
+                if price_interval_by_product < 0:
+                    price_interval_by_product = price_interval_by_product * -1
+                if price_interval_by_product > price_interval:
+                    price_interval = price_interval_by_product
+                print(f"Price interval: {price_interval}")
+                print(f"Price interval by product: {price_interval_by_product}")
 
                 logging.info(f"Price change detected: {lastprice} -> {price}")
 
@@ -145,7 +161,7 @@ def update():
                         "values (?, ? ,? , ? , ?, ?)",
                         (id_item, item, price, time, link[i], information))
     try:
-        if changecount > 0:
+        if changecount > 0 and price_interval > price_range_notification:
             notifyex()
             print("Уведомление")
         con.commit()

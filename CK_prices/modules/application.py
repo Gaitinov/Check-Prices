@@ -680,6 +680,12 @@ class Settings(tkinter.Toplevel):
         self.entry = ct.CTkEntry(self, width=200, corner_radius=10)
         self.entry.pack(pady=5)
 
+        self.label_price_range = ct.CTkLabel(self, text="Введите диапазон цен для уведомлений:")
+        self.label_price_range.pack(pady=10)
+
+        self.entry_price_range = ct.CTkEntry(self, width=200, corner_radius=10)
+        self.entry_price_range.pack(pady=5)
+
         self.button = ct.CTkButton(self, text="Сохранить", command=self.save_value)
         self.button.pack(pady=10)
 
@@ -688,22 +694,39 @@ class Settings(tkinter.Toplevel):
         config = configparser.ConfigParser()
         config.read('settings.ini')
         current_value = config.get('DEFAULT', 'CHECK_PRICE_INTERVAL', fallback='Введите значение')
+
+        current_price_range = config.get('DEFAULT', 'PRICE_RANGE_NOTIFICATION', fallback='Введите значение')
+        self.entry_price_range.insert(0, current_price_range)
         self.entry.insert(0, current_value)
+
     def save_value(self):
         value = self.entry.get()
+        price_range_notification = self.entry_price_range.get()
+        config = configparser.ConfigParser()
+        config.read('settings.ini')
+
         try:
             value_int = int(value)
             if value_int <= 59 or value_int > 100000:
                 raise ValueError
-            config = configparser.ConfigParser()
-            config.read('settings.ini')
             config.set('DEFAULT', 'CHECK_PRICE_INTERVAL', value)
-            with open('settings.ini', 'w') as configfile:
-                config.write(configfile)
-            os.execv(sys.executable, ['python'] + sys.argv)
-            self.destroy()
         except ValueError:
-            tkinter.messagebox.showerror("Ошибка", "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000")
+            tkinter.messagebox.showerror("Ошибка",
+                                         "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000")
+
+        try:
+            price_range_notification = int(price_range_notification)
+            if price_range_notification < 0:
+                raise ValueError
+            config.set('DEFAULT', 'PRICE_RANGE_NOTIFICATION', str(price_range_notification))  # Сохранение как строки
+        except ValueError:
+            tkinter.messagebox.showerror("Ошибка", "Введите корректный диапазон цен")
+
+        with open('settings.ini', 'w') as configfile:
+            config.write(configfile)
+
+        os.execv(sys.executable, ['python'] + sys.argv)
+        self.destroy()
 
 
 
