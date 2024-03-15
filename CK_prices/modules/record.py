@@ -80,10 +80,18 @@ class Record(ct.CTkToplevel):
         self.bind("<Map>", self.place)
 
     def place(self, evt):
-        self.geometry("+" + str(self.winfo_width()) + "x" +
-                      str(self.winfo_height()) + "+" +
-                      str(self.parent.winfo_rootx()) + "+" +
-                      str(self.parent.winfo_rooty()))
+        self.update_idletasks()
+
+        window_width = self.winfo_width()
+        window_height = self.winfo_height()
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        x = int((screen_width - window_width) / 2)
+        y = int((screen_height - window_height) / 2)
+
+        self.geometry(f"+{x}+{y}")
 
     def save_record(self):
         cur = self.parent.con.cursor()
@@ -160,10 +168,18 @@ class Recordtop(ct.CTkToplevel):
         self.bind("<Map>", self.place)
 
     def place(self, evt):
-        self.geometry("+" + str(self.winfo_width()) + "x" +
-                      str(self.winfo_height()) + "+" +
-                      str(self.parent.winfo_rootx()) + "+" +
-                      str(self.parent.winfo_rooty()))
+        self.update_idletasks()
+
+        window_width = self.winfo_width()
+        window_height = self.winfo_height()
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        x = int((screen_width - window_width) / 2)
+        y = int((screen_height - window_height) / 2)
+
+        self.geometry(f"+{x}+{y}")
 
     def save_record(self):
         cur = self.parent.con.cursor()
@@ -289,10 +305,18 @@ class Recordlink(ct.CTkToplevel):
         self.bind("<Map>", self.place)
 
     def place(self, evt):
-        self.geometry("+" + str(self.winfo_width()) + "x" +
-                      str(self.winfo_height()) + "+" +
-                      str(self.parent.winfo_rootx()) + "+" +
-                      str(self.parent.winfo_rooty()))
+        self.update_idletasks()
+
+        window_width = self.winfo_width()
+        window_height = self.winfo_height()
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        x = int((screen_width - window_width) / 2)
+        y = int((screen_height - window_height) / 2)
+
+        self.geometry(f"+{x}+{y}")
 
     def save_record(self):
         if "flip" in self.link.get():
@@ -329,11 +353,7 @@ class Recordlink(ct.CTkToplevel):
                 information = "Товара нет в наличии"
 
         elif "kaspi" in self.link.get():
-            driver = setup_driver()
-            driver.get(self.link.get())
-            time.sleep(5)
-            html = driver.page_source
-            driver.quit()
+            html = setup_driver(self.link.get())
 
             soup = BS(html, 'html.parser')
             try:

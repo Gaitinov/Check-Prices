@@ -30,6 +30,8 @@ config.read('settings.ini')
 # Получение настройки
 interval = config.getint('DEFAULT', 'check_price_interval')
 check_price_interval = interval
+interval = config.getint('DEFAULT', 'price_range_for_save_to_db')
+price_range_for_save_to_db = interval
 
 class Application(tkinter.Tk):
     app_title = "Учёт цен"
@@ -257,7 +259,7 @@ class Application(tkinter.Tk):
         cur = self.con.cursor()
         s = self.search.get()
         if s:
-            cur.execute("SELECT * FROM prices WHERE id_item LIKE ? ORDER BY id_item DESC;", (s + "%",))
+            cur.execute("SELECT * FROM prices WHERE id_item LIKE ? ORDER BY id_record DESC;", (s + "%",))
         else:
             cur.execute("SELECT * FROM prices ORDER BY id_record DESC;")
         for rec in cur:
@@ -361,7 +363,7 @@ class Application(tkinter.Tk):
         link = cur.execute(f"select link from items").fetchall()
         link = ([x[0] for x in link])
         link_count = len(link)
-        changecount = 0
+        price_interval = 0
 
         for i in range(link_count):
             if "flip" in link[i]:
@@ -453,11 +455,16 @@ class Application(tkinter.Tk):
                 if lastprice != price:
                     print(f"Price change detected: {lastprice} -> {price}")
                     id_item = str(cur.execute(f"select id_item from items WHERE link = '{link[i]}'").fetchone()[0])
-
-                    cur.execute("insert into prices (id_item, item, price, time, link, information) " +
+                    price_interval_by_product = lastprice - price
+                    print(f"Price interval by product: {price_interval_by_product}")
+                    if price_interval_by_product < 0:
+                        price_interval_by_product = price_interval_by_product * -1
+                    if price_interval_by_product > price_interval:
+                        price_interval = price_interval_by_product
+                    if price_range_for_save_to_db < price_interval_by_product:
+                        cur.execute("insert into prices (id_item, item, price, time, link, information) " +
                                 "values (?, ? ,? , ? , ?, ?)",
                                 (id_item, item, price, time, link[i], information))
-                    changecount = 1
 
 
 
@@ -467,7 +474,7 @@ class Application(tkinter.Tk):
                 cur.execute("insert into prices (id_item, item, price, time, link, information) " +
                             "values (?, ? ,? , ? , ?, ?)",
                             (id_item, item, price, time, link[i], information))
-        if changecount == 0:
+        if price_interval < price_range_for_save_to_db:
             tkinter.messagebox.showinfo("Уведомление",
                                         "Изменений нет", parent=self)
         else:
@@ -496,10 +503,28 @@ class Window(tkinter.Toplevel):
 
         self.con = sqlite3.connect(db_path)
         self.create_widgets()
+        self.center_window()
         self.title(Application.app_title)
         self.iconbitmap(r"images/icon.ico")
         self.mainloop()
 
+    def center_window(self):
+        self.update_idletasks()  # Обновляем информацию о размерах окна
+
+        # Получаем ширину и высоту окна
+        window_width = self.winfo_width()
+        window_height = self.winfo_height()
+
+        # Получаем ширину и высоту экрана
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        # Вычисляем координаты для центрирования окна
+        x = int((screen_width - window_width) / 2)
+        y = int((screen_height - window_height) / 2)
+
+        # Устанавливаем новые координаты окна
+        self.geometry(f"+{x}+{y}")
     def create_widgets(self):
         self.add_image = tkinter.PhotoImage(file=r"images/add.gif")
         self.addlink_image = tkinter.PhotoImage(file=r"images/addlink.png")
@@ -668,9 +693,7 @@ class Settings(tkinter.Toplevel):
     def init_ui(self):
         self.title("Настройки")
         self.geometry(
-            f"600x300+{self.winfo_screenwidth() // 2 - self.winfo_reqwidth() // 2}+{self.winfo_screenheight() // 2 - self.winfo_reqheight() // 2}")
-
-        # Применение элементов customtkinter для улучшения дизайна
+            f"800x600+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 600 // 2}")
         self.configure(bg='#f0f0f0')
 
         # Использование корректного аргумента для задания шрифта
@@ -683,8 +706,14 @@ class Settings(tkinter.Toplevel):
         self.label_price_range = ct.CTkLabel(self, text="Введите диапазон цен для уведомлений:")
         self.label_price_range.pack(pady=10)
 
-        self.entry_price_range = ct.CTkEntry(self, width=200, corner_radius=10)
-        self.entry_price_range.pack(pady=5)
+        self.entry_price_range_notification = ct.CTkEntry(self, width=200, corner_radius=10)
+        self.entry_price_range_notification.pack(pady=5)
+
+        self.label_price_range_save_db = ct.CTkLabel(self, text="Введите диапазон цен для сохранения в базу данных:")
+        self.label_price_range_save_db.pack(pady=10)
+
+        self.entry_price_range_save_db = ct.CTkEntry(self, width=200, corner_radius=10)
+        self.entry_price_range_save_db.pack(pady=5)
 
         self.button = ct.CTkButton(self, text="Сохранить", command=self.save_value)
         self.button.pack(pady=10)
@@ -695,39 +724,53 @@ class Settings(tkinter.Toplevel):
         config.read('settings.ini')
         current_value = config.get('DEFAULT', 'CHECK_PRICE_INTERVAL', fallback='Введите значение')
 
-        current_price_range = config.get('DEFAULT', 'PRICE_RANGE_NOTIFICATION', fallback='Введите значение')
-        self.entry_price_range.insert(0, current_price_range)
+        current_price_range_notification = config.get('DEFAULT', 'PRICE_RANGE_NOTIFICATION', fallback='Введите значение')
+        current_price_range_save_db = config.get('DEFAULT', 'PRICE_RANGE_FOR_SAVE_TO_DB', fallback='Введите значение')
+        self.entry_price_range_notification.insert(0, current_price_range_notification)
+        self.entry_price_range_save_db.insert(0, current_price_range_save_db)
         self.entry.insert(0, current_value)
 
     def save_value(self):
         value = self.entry.get()
-        price_range_notification = self.entry_price_range.get()
+        price_range_notification = self.entry_price_range_notification.get()
+        price_range_save_db = self.entry_price_range_save_db.get()
         config = configparser.ConfigParser()
         config.read('settings.ini')
 
         try:
+            price_range_save = int(price_range_save_db)
+            if price_range_save < 0:
+                raise ValueError("Введите корректный диапазон цен для сохранения")
+            config.set('DEFAULT', 'PRICE_RANGE_FOR_SAVE_TO_DB', str(price_range_save))  # Сохранение как строки
+        except ValueError as e:
+            tkinter.messagebox.showerror("Ошибка", str(e))
+            return
+
+        try:
             value_int = int(value)
             if value_int <= 59 or value_int > 100000:
-                raise ValueError
+                raise ValueError(
+                    "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000")
             config.set('DEFAULT', 'CHECK_PRICE_INTERVAL', value)
-        except ValueError:
-            tkinter.messagebox.showerror("Ошибка",
-                                         "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000")
+        except ValueError as e:
+            tkinter.messagebox.showerror("Ошибка", str(e))
+            return
 
         try:
             price_range_notification = int(price_range_notification)
-            if price_range_notification < 0:
-                raise ValueError
-            config.set('DEFAULT', 'PRICE_RANGE_NOTIFICATION', str(price_range_notification))  # Сохранение как строки
-        except ValueError:
-            tkinter.messagebox.showerror("Ошибка", "Введите корректный диапазон цен")
+            if price_range_notification < price_range_save:
+                raise ValueError(
+                    "Введите корректный диапазон цен для уведомлений, который больше или равен диапазону цен для сохранения")
+            config.set('DEFAULT', 'PRICE_RANGE_NOTIFICATION', str(price_range_notification))
+        except ValueError as e:
+            tkinter.messagebox.showerror("Ошибка", str(e))
+            return
 
         with open('settings.ini', 'w') as configfile:
             config.write(configfile)
 
         os.execv(sys.executable, ['python'] + sys.argv)
         self.destroy()
-
 
 
 

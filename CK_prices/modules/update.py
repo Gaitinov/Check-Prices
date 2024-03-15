@@ -14,6 +14,8 @@ config.read('settings.ini')
 
 interval = config.getint('DEFAULT', 'price_range_notification')
 price_range_notification = interval
+interval = config.getint('DEFAULT', 'price_range_for_save_to_db')
+price_range_for_save_to_db = interval
 
 def notifyex():
     notification.notify(
@@ -45,7 +47,6 @@ def update():
     link = cur.execute(f"select link from items").fetchall()
     link = ([x[0] for x in link])
     link_count = len(link)
-    changecount = 0
     price_interval = 0
 
 
@@ -138,20 +139,21 @@ def update():
                 print(f"Price change detected: {lastprice} -> {price}")
                 id_item = str(cur.execute(f"select id_item from items WHERE link = '{link[i]}'").fetchone()[0])
 
-                cur.execute("insert into prices (id_item, item, price, time, link, information) " +
-                            "values (?, ? ,? , ? , ?, ?)",
-                            (id_item, item, price, time, link[i], information))
-                changecount = 1
+
                 price_interval_by_product = lastprice - price
-                # перевод интервала в положительное число
                 if price_interval_by_product < 0:
                     price_interval_by_product = price_interval_by_product * -1
                 if price_interval_by_product > price_interval:
                     price_interval = price_interval_by_product
+                if price_range_for_save_to_db < price_interval_by_product:
+                    cur.execute("insert into prices (id_item, item, price, time, link, information) " +
+                                "values (?, ? ,? , ? , ?, ?)",
+                                (id_item, item, price, time, link[i], information))
+
+
                 print(f"Price interval: {price_interval}")
                 print(f"Price interval by product: {price_interval_by_product}")
-
-                logging.info(f"Price change detected: {lastprice} -> {price}")
+                print(f"Price range for save to db: {price_range_for_save_to_db}")
 
 
         else:
@@ -161,7 +163,7 @@ def update():
                         "values (?, ? ,? , ? , ?, ?)",
                         (id_item, item, price, time, link[i], information))
     try:
-        if changecount > 0 and price_interval > price_range_notification:
+        if price_interval > price_range_notification:
             notifyex()
             print("Уведомление")
         con.commit()
