@@ -489,6 +489,8 @@ class Window(tkinter.Toplevel):
 
     def __init__(self):
         super().__init__()
+        self.active_operations = 0
+        self.configure_activity_indicator()
         if getattr(sys, 'frozen', False):
             dir_path = sys._MEIPASS
         else:
@@ -565,6 +567,10 @@ class Window(tkinter.Toplevel):
         self.search = tkinter.StringVar()
         self.search.set("")
 
+        self.activity_indicator = ct.CTkLabel(self, text="Добавление данных...", font=("Arial", 12))
+        self.activity_indicator.grid(row=3, column=0, pady=10, padx=10, sticky="ew")
+        self.activity_indicator.grid_remove()  # Скрыть по умолчанию
+
         frm = tkinter.ttk.Frame(self)
         entSearch = ct.CTkEntry(frm, textvariable=self.search)
         entSearch.grid(row=0, column=0, sticky="we")
@@ -640,6 +646,31 @@ class Window(tkinter.Toplevel):
 
     def add_link(self):
         Recordlink(parent=self)
+
+    def configure_activity_indicator(self):
+        # Инициализация и настройка индикатора активности
+        self.activity_indicator = ct.CTkLabel(self, text="", font=("Arial", 12))
+        self.activity_indicator.grid(row=3, column=0, pady=10, padx=10, sticky="ew")
+        self.activity_indicator.grid_remove()  # Скрыть по умолчанию
+
+    def update_activity_indicator(self):
+        if self.active_operations > 0:
+            self.activity_indicator.configure(text=f"Добавление данных... ({self.active_operations})")
+        else:
+            self.activity_indicator.configure(text="")
+
+    def show_activity(self):
+        self.active_operations += 1
+        self.update_activity_indicator()
+        if self.active_operations == 1:
+            self.activity_indicator.grid()
+
+    def hide_activity(self):
+        if self.active_operations > 0:
+            self.active_operations -= 1
+            self.update_activity_indicator()
+            if self.active_operations == 0:
+                self.activity_indicator.grid_remove()
 
     def edit_record(self):
         r = self.trwPB.focus()
