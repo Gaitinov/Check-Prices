@@ -10,7 +10,6 @@ import webbrowser
 import os
 import configparser
 import plotly.graph_objects as go
-from plyer import notification
 from pystray import MenuItem as item
 import pystray
 import threading
@@ -122,13 +121,6 @@ class Application(tkinter.Tk):
 
         def exitall(icon, item):
             os._exit(0)
-        def notifyex():
-            notification.notify(
-                title="Check prices",
-                message="Цены изменились",
-                app_icon="images/icon.ico",
-                timeout=10,
-            )
 
         try:
             if self.schprocess is None or not self.schprocess.is_alive():

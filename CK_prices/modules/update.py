@@ -7,7 +7,7 @@ from modules.driver import setup_driver
 import sqlite3
 import os
 import sys
-from plyer import notification
+from winotify import Notification
 
 config = configparser.ConfigParser()
 config.read('settings.ini')
@@ -18,12 +18,13 @@ interval = config.getint('DEFAULT', 'price_range_for_save_to_db')
 price_range_for_save_to_db = interval
 
 def notifyex():
-    notification.notify(
-        title="Check prices",
-        message="Цены изменились",
-        app_icon="images/icon.ico",
-        timeout=10,
-    )
+    try:
+        toast = Notification(app_id="Check prices",
+                             title="Откройте приложение",
+                             msg="Цены изменились")
+        toast.show()
+    except Exception as e:
+        print(f"Произошла ошибка: {e}")
 
 def update():
     # Настройка логирования
