@@ -261,6 +261,19 @@ class Application(tkinter.Tk):
         button = ct.CTkButton(frm, text="Товары", command=self.newwindow)
         button.grid(row=0, column=4, padx=20, pady=5)
 
+        context_menu = tkinter.Menu(self, tearoff=0)
+        context_menu.add_command(label="Создать график", command=self.create_graph)
+        context_menu.add_command(label="Добавить", command=self.add_record)
+        context_menu.add_command(label="Изменить", command=self.edit_record)
+        context_menu.add_command(label="Удалить", command=self.delete_record)
+
+        def show_context_menu(event):
+            row_id = self.trwPB.identify_row(event.y)
+            self.trwPB.selection_set(row_id)
+            context_menu.post(event.x_root, event.y_root)
+
+        self.trwPB.bind("<Button-3>", show_context_menu)
+
         self.load_data()
 
     def on_double_click(self, event):
@@ -738,6 +751,19 @@ class Products(tkinter.Toplevel):
         self.bind("<Destroy>", self.cleanup)
 
         self.trwPB.bind("<Double-1>", self.on_double_click)
+
+        context_menu = tkinter.Menu(self, tearoff=0)
+        context_menu.add_command(label="Добавить", command=self.add_record)
+        context_menu.add_command(label="Добавить товар по ссылке", command=self.add_link)
+        context_menu.add_command(label="Изменить", command=self.edit_record)
+        context_menu.add_command(label="Удалить", command=self.delete_record)
+
+        def show_context_menu(event):
+            row_id = self.trwPB.identify_row(event.y)
+            self.trwPB.selection_set(row_id)
+            context_menu.post(event.x_root, event.y_root)
+
+        self.trwPB.bind("<Button-3>", show_context_menu)
 
         self.load_data()
 
