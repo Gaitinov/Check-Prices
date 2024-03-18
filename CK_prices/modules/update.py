@@ -4,6 +4,7 @@ import configparser
 from bs4 import BeautifulSoup as BS
 from datetime import datetime
 from modules.driver import setup_driver
+from modules.ozondriver import setup_driver_ozon
 import sqlite3
 import os
 import sys
@@ -112,7 +113,30 @@ def update():
                 information = ' / '.join(item.get_text().strip() for item in description_items)
             except:
                 information = "Информации нет"
-
+        elif "ozon" in link[i]:
+            try:
+                html = setup_driver_ozon(link[i])
+                soup = BS(html, 'html.parser')
+            except Exception as e:
+                logging.error(f"Произошла ошибка: {e}")
+            try:
+                item = soup.find(attrs={"data-widget": "webProductHeading"})
+                item = item.get_text().strip()
+            except:
+                item = "Информации нет"
+            try:
+                price_block = soup.find('div', class_='lo2')
+                price_text = price_block.get_text().strip()
+                price_text = price_text.split('₸')[0]
+                price = int(''.join(filter(str.isdigit, price_text)))
+            except:
+                price = 0
+                item = "Товара нет в наличии"
+            try:
+                description_block = soup.find('div', class_='RA-a1')
+                information = description_block.get_text().strip()
+            except:
+                information = "Информации нет"
         else:
             continue
 

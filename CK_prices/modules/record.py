@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup as BS
 from datetime import datetime
 from modules.driver import setup_driver
+from modules.ozondriver import setup_driver_ozon
 
 class Record(ct.CTkToplevel):
     def __init__(self, parent=None, record={}):
@@ -254,6 +255,24 @@ class Recordtop(ct.CTkToplevel):
                 except:
                     information = "Информации нет"
 
+            elif "ozon" in self.link.get():
+                html = setup_driver_ozon(self.link.get())
+
+                soup = BS(html, 'html.parser')
+                try:
+                    price_block = soup.find('div', class_='lo2')
+                    price_text = price_block.get_text().strip()
+                    price_text = price_text.split('₸')[0]
+                    price = int(''.join(filter(str.isdigit, price_text)))
+                except:
+                    price = 0
+                    self.item = "Товара нет в наличии"
+                try:
+                    description_block = soup.find('div', class_='RA-a1')
+                    information = description_block.get_text().strip()
+                except:
+                    information = "Информации нет"
+
 
             else:
                 tkinter.messagebox.showerror("Ошибка", f"Неизвестный магазин: {self.link.get()}")
@@ -405,6 +424,29 @@ class Recordlink(ct.CTkToplevel):
                 description = soup.find('div', class_='item__description-text')
                 description_items = description.find_all('li')
                 information = ' / '.join(item.get_text().strip() for item in description_items)
+            except:
+                information = "Информации нет"
+
+        elif "ozon" in self.link.get():
+            html = setup_driver_ozon(self.link.get())
+
+            soup = BS(html, 'html.parser')
+            try:
+                item = soup.find(attrs={"data-widget": "webProductHeading"})
+                item = item.get_text().strip()
+            except:
+                item = "Информации нет"
+            try:
+                price_block = soup.find('div', class_='lo2')
+                price_text = price_block.get_text().strip()
+                price_text = price_text.split('₸')[0]
+                price = int(''.join(filter(str.isdigit, price_text)))
+            except:
+                price = 0
+                item = "Товара нет в наличии"
+            try:
+                description_block = soup.find('div', class_='RA-a1')
+                information = description_block.get_text().strip()
             except:
                 information = "Информации нет"
         else:

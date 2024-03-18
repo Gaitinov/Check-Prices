@@ -1,8 +1,7 @@
 import logging
 from playwright.sync_api import sync_playwright
-import time as tm
 
-def setup_driver(url):
+def setup_driver_ozon(url):
     try:
         logging.info('Драйвер запушен')
         with sync_playwright() as playwright:
@@ -11,6 +10,9 @@ def setup_driver(url):
             page = context.new_page()
             page.goto(url)
             page.wait_for_load_state("networkidle")
+            page.click('button#reload-button')
+            page.wait_for_selector("#section-description")
+            page.eval_on_selector("#section-description", "element => element.scrollIntoView()")
             html = page.content()
             return html
     except Exception as e:
