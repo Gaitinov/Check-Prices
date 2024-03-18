@@ -10,6 +10,7 @@ from datetime import datetime
 from modules.driver import setup_driver
 from modules.ozondriver import setup_driver_ozon
 
+
 class Record(ct.CTkToplevel):
     def __init__(self, parent=None, record={}):
         super().__init__()
@@ -71,8 +72,7 @@ class Record(ct.CTkToplevel):
         self.btnOK = ct.CTkButton(self, text="ОК", command=self.save_record)
         self.btnOK.grid(row=6, column=0, sticky="e", **grid_params)
 
-        self.btnCancel = ct.CTkButton(self, text="Отмена",
-                                      command=self.destroy)
+        self.btnCancel = ct.CTkButton(self, text="Отмена", command=self.destroy)
         self.btnCancel.grid(row=6, column=1, sticky="e", **grid_params)
 
         self.bind_all("<Alt-KeyPress-b>", lambda evt: self.entFIO.focus_set())
@@ -102,17 +102,35 @@ class Record(ct.CTkToplevel):
             if self.id_record:
                 cur.execute(
                     "update prices set id_item=?, item=?, price=?, time=?, link=?, information=? where id_record=?",
-                    (self.id_item.get(), self.item.get(), self.price.get(), self.time.get(), self.link.get(),
-                     self.information.get(), self.id_record))
+                    (
+                        self.id_item.get(),
+                        self.item.get(),
+                        self.price.get(),
+                        self.time.get(),
+                        self.link.get(),
+                        self.information.get(),
+                        self.id_record,
+                    ),
+                )
             else:
-                cur.execute("insert into prices (id_item, item, price, time, link, information) " + \
-                            "values (?, ? ,? , ? , ?, ?)",
-                            (self.id_item.get(), self.item.get(), self.price.get(), self.time.get(), self.link.get(),
-                             self.information.get()))
+                cur.execute(
+                    "insert into prices (id_item, item, price, time, link, information) "
+                    + "values (?, ? ,? , ? , ?, ?)",
+                    (
+                        self.id_item.get(),
+                        self.item.get(),
+                        self.price.get(),
+                        self.time.get(),
+                        self.link.get(),
+                        self.information.get(),
+                    ),
+                )
         except sqlite3.DatabaseError as err:
-            ct.messagebox.showerror(self.parent.app_title,
-                                    "При сохранении записи возникла ошибка: " + str(err),
-                                    parent=self)
+            ct.messagebox.showerror(
+                self.parent.app_title,
+                "При сохранении записи возникла ошибка: " + str(err),
+                parent=self,
+            )
         else:
             self.parent.con.commit()
             self.parent.load_data()
@@ -159,8 +177,7 @@ class Recordtop(ct.CTkToplevel):
         self.btnOK = ct.CTkButton(self, text="ОК", command=self.save_record)
         self.btnOK.grid(row=5, column=0, sticky="e", **grid_params)
 
-        self.btnCancel = ct.CTkButton(self, text="Отмена",
-                                      command=self.destroy)
+        self.btnCancel = ct.CTkButton(self, text="Отмена", command=self.destroy)
         self.btnCancel.grid(row=5, column=1, sticky="e", **grid_params)
 
         self.bind_all("<Alt-KeyPress-b>", lambda evt: self.entitem.focus_set())
@@ -191,17 +208,17 @@ class Recordtop(ct.CTkToplevel):
         self.destroy()
 
     def save_record_logic(self):
-        if getattr(sys, 'frozen', False):
+        if getattr(sys, "frozen", False):
             dir_path = sys._MEIPASS
         else:
             dir_path = os.path.dirname(os.path.abspath(__file__))
 
-        db_dir = os.path.join(dir_path, 'data')
+        db_dir = os.path.join(dir_path, "data")
 
         if not os.path.exists(db_dir):
             os.makedirs(db_dir)
 
-        db_path = os.path.join(db_dir, 'tab.db')
+        db_path = os.path.join(db_dir, "tab.db")
         if not self.id_item:
             if "flip" in self.link.get():
                 r = requests.get(self.link.get())
@@ -211,12 +228,12 @@ class Recordtop(ct.CTkToplevel):
                 except:
                     information = "Информации нет"
                 try:
-                    meta_tag = html.find('meta', {'itemprop': 'price'})
-                    price = int(meta_tag['content'])
+                    meta_tag = html.find("meta", {"itemprop": "price"})
+                    price = int(meta_tag["content"])
                 except:
                     try:
                         price = html.find("span", class_="text_att").text
-                        price = price.replace('₸', '')  # remove space and "₸" symbol
+                        price = price.replace("₸", "")  # remove space and "₸" symbol
                         price = int(price)
                     except:
                         price = 0
@@ -225,77 +242,105 @@ class Recordtop(ct.CTkToplevel):
             elif "technodom" in self.link.get():
                 r = requests.get(self.link.get())
                 html = BS(r.content, "html.parser")
-                information = "Для дополнительной информации перейдите на страницу товара"
+                information = (
+                    "Для дополнительной информации перейдите на страницу товара"
+                )
                 try:
-                    price = html.find('p', class_='Typography__Heading_H1').text
-                    price = price.replace('₸', '')  # remove space and "₸" symbol
+                    price = html.find("p", class_="Typography__Heading_H1").text
+                    price = price.replace("₸", "")  # remove space and "₸" symbol
                     price = int(price)
                     print(price)
                 except:
                     price = 0
                     information = "Товара нет в наличии"
 
-
             elif "kaspi" in self.link.get():
                 html = setup_driver(self.link.get())
 
-                soup = BS(html, 'html.parser')
+                soup = BS(html, "html.parser")
 
                 try:
-                    price_text = soup.find('div', class_='item__price-once').text.strip()
-                    price = int(''.join(filter(str.isdigit, price_text)))
+                    price_text = soup.find(
+                        "div", class_="item__price-once"
+                    ).text.strip()
+                    price = int("".join(filter(str.isdigit, price_text)))
                 except:
                     price = 0
                     self.item = "Товара нет в наличии"
 
                 try:
-                    description = soup.find('div', class_='item__description-text')
-                    description_items = description.find_all('li')
-                    information = ' / '.join(item.get_text().strip() for item in description_items)
+                    description = soup.find("div", class_="item__description-text")
+                    description_items = description.find_all("li")
+                    information = " / ".join(
+                        item.get_text().strip() for item in description_items
+                    )
                 except:
                     information = "Информации нет"
 
             elif "ozon" in self.link.get():
                 html = setup_driver_ozon(self.link.get())
 
-                soup = BS(html, 'html.parser')
+                soup = BS(html, "html.parser")
                 try:
-                    price_block = soup.find('div', class_='lo2')
+                    price_block = soup.find("div", class_="lo2")
                     price_text = price_block.get_text().strip()
-                    price_text = price_text.split('₸')[0]
-                    price = int(''.join(filter(str.isdigit, price_text)))
+                    price_text = price_text.split("₸")[0]
+                    price = int("".join(filter(str.isdigit, price_text)))
                 except:
                     price = 0
                     self.item = "Товара нет в наличии"
                 try:
-                    description_block = soup.find('div', class_='RA-a1')
+                    description_block = soup.find("div", class_="RA-a1")
                     information = description_block.get_text().strip()
                 except:
                     information = "Информации нет"
 
-
             else:
-                tkinter.messagebox.showerror("Ошибка", f"Неизвестный магазин: {self.link.get()}")
+                tkinter.messagebox.showerror(
+                    "Ошибка", f"Неизвестный магазин: {self.link.get()}"
+                )
                 return
         try:
             # Получаем доступ к базе данных в отдельном потоке
             with sqlite3.connect(db_path) as con:
                 cur = con.cursor()
                 if self.id_item:
-                    cur.execute("update items set item=?, time=?, link=? where id_item=?",
-                                (self.item.get(), self.time.get(), self.link.get(), self.id_item))
+                    cur.execute(
+                        "update items set item=?, time=?, link=? where id_item=?",
+                        (
+                            self.item.get(),
+                            self.time.get(),
+                            self.link.get(),
+                            self.id_item,
+                        ),
+                    )
                 else:
-                    cur.execute("insert into items (item, time, link) " + \
-                                "values (?, ? ,? )",
-                                (self.item.get(), self.time.get(), self.link.get()))
+                    cur.execute(
+                        "insert into items (item, time, link) " + "values (?, ? ,? )",
+                        (self.item.get(), self.time.get(), self.link.get()),
+                    )
                     id_item = str(cur.lastrowid)
-                    cur.execute("insert into prices (id_item, item, price, time, link, information) " + \
-                                "values (?, ? ,? , ? , ?, ?)",
-                                (id_item, self.item.get(), price, self.time.get(), self.link.get(), information))
+                    cur.execute(
+                        "insert into prices (id_item, item, price, time, link, information) "
+                        + "values (?, ? ,? , ? , ?, ?)",
+                        (
+                            id_item,
+                            self.item.get(),
+                            price,
+                            self.time.get(),
+                            self.link.get(),
+                            information,
+                        ),
+                    )
         except sqlite3.DatabaseError as err:
             # Ошибка обновления UI должна выполняться в основном потоке
-            self.parent.after(0, lambda: ct.messagebox.showerror(self.parent.app_title,
-                                                                 "При сохранении записи возникла ошибка: " + str(err)))
+            self.parent.after(
+                0,
+                lambda: ct.messagebox.showerror(
+                    self.parent.app_title,
+                    "При сохранении записи возникла ошибка: " + str(err),
+                ),
+            )
         else:
             # Подтверждение изменений и обновление данных в UI в основном потоке
             self.parent.after(0, self.parent.load_data)
@@ -329,8 +374,7 @@ class Recordlink(ct.CTkToplevel):
         self.btnOK = ct.CTkButton(self, text="ОК", command=self.save_record)
         self.btnOK.grid(row=1, column=0, sticky="e", **grid_params)
 
-        self.btnCancel = ct.CTkButton(self, text="Отмена",
-                                      command=self.destroy)
+        self.btnCancel = ct.CTkButton(self, text="Отмена", command=self.destroy)
         self.btnCancel.grid(row=1, column=1, sticky="e", **grid_params)
 
         self.bind_all("<Alt-KeyPress-b>", lambda evt: self.entitem.focus_set())
@@ -360,19 +404,18 @@ class Recordlink(ct.CTkToplevel):
         save_thread.start()
         self.destroy()
 
-
     def save_record_logic(self):
-        if getattr(sys, 'frozen', False):
+        if getattr(sys, "frozen", False):
             dir_path = sys._MEIPASS
         else:
             dir_path = os.path.dirname(os.path.abspath(__file__))
 
-        db_dir = os.path.join(dir_path, 'data')
+        db_dir = os.path.join(dir_path, "data")
 
         if not os.path.exists(db_dir):
             os.makedirs(db_dir)
 
-        db_path = os.path.join(db_dir, 'tab.db')
+        db_path = os.path.join(db_dir, "tab.db")
         if "flip" in self.link.get():
             r = requests.get(self.link.get())
             html = BS(r.content, "html.parser")
@@ -382,12 +425,12 @@ class Recordlink(ct.CTkToplevel):
             except:
                 information = "Информации нет"
             try:
-                meta_tag = html.find('meta', {'itemprop': 'price'})
-                price = int(meta_tag['content'])
+                meta_tag = html.find("meta", {"itemprop": "price"})
+                price = int(meta_tag["content"])
             except:
                 try:
                     price = html.find("span", class_="text_att").text
-                    price = price.replace('₸', '')  # remove space and "₸" symbol
+                    price = price.replace("₸", "")  # remove space and "₸" symbol
                     price = int(price)
                 except:
                     price = 0
@@ -399,8 +442,8 @@ class Recordlink(ct.CTkToplevel):
             item = html.find("h1").text
             information = "Для дополнительной информации перейдите на страницу товара"
             try:
-                price = html.find('p', class_='Typography__Heading_H1').text
-                price = price.replace('₸', '')  # remove space and "₸" symbol
+                price = html.find("p", class_="Typography__Heading_H1").text
+                price = price.replace("₸", "")  # remove space and "₸" symbol
                 price = int(price)
             except:
                 price = 0
@@ -409,68 +452,84 @@ class Recordlink(ct.CTkToplevel):
         elif "kaspi" in self.link.get():
             html = setup_driver(self.link.get())
 
-            soup = BS(html, 'html.parser')
+            soup = BS(html, "html.parser")
             try:
-                item = soup.find('h1', class_='item__heading').text.strip()
+                item = soup.find("h1", class_="item__heading").text.strip()
             except:
                 item = "Информации нет"
             try:
-                price_text = soup.find('div', class_='item__price-once').text.strip()
-                price = int(''.join(filter(str.isdigit, price_text)))
+                price_text = soup.find("div", class_="item__price-once").text.strip()
+                price = int("".join(filter(str.isdigit, price_text)))
             except:
                 price = 0
                 item = "Товара нет в наличии"
             try:
-                description = soup.find('div', class_='item__description-text')
-                description_items = description.find_all('li')
-                information = ' / '.join(item.get_text().strip() for item in description_items)
+                description = soup.find("div", class_="item__description-text")
+                description_items = description.find_all("li")
+                information = " / ".join(
+                    item.get_text().strip() for item in description_items
+                )
             except:
                 information = "Информации нет"
 
         elif "ozon" in self.link.get():
             html = setup_driver_ozon(self.link.get())
 
-            soup = BS(html, 'html.parser')
+            soup = BS(html, "html.parser")
             try:
                 item = soup.find(attrs={"data-widget": "webProductHeading"})
                 item = item.get_text().strip()
             except:
                 item = "Информации нет"
             try:
-                price_block = soup.find('div', class_='lo2')
+                price_block = soup.find("div", class_="lo2")
                 price_text = price_block.get_text().strip()
-                price_text = price_text.split('₸')[0]
-                price = int(''.join(filter(str.isdigit, price_text)))
+                price_text = price_text.split("₸")[0]
+                price = int("".join(filter(str.isdigit, price_text)))
             except:
                 price = 0
                 item = "Товара нет в наличии"
             try:
-                description_block = soup.find('div', class_='RA-a1')
+                description_block = soup.find("div", class_="RA-a1")
                 information = description_block.get_text().strip()
             except:
                 information = "Информации нет"
         else:
-            tkinter.messagebox.showerror("Ошибка", f"Неизвестный магазин: {self.link.get()}")
+            tkinter.messagebox.showerror(
+                "Ошибка", f"Неизвестный магазин: {self.link.get()}"
+            )
             return
 
         now = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
         try:
             with sqlite3.connect(db_path) as con:
                 cur = con.cursor()
-                cur.execute("insert into items (item, time, link) " +
-                        "values (?, ? , ? )",
-                        (item, now, self.link.get()))
-                id_item = str(cur.execute(f"select id_item from items WHERE time = '{now}'").fetchone()[0])
+                cur.execute(
+                    "insert into items (item, time, link) " + "values (?, ? , ? )",
+                    (item, now, self.link.get()),
+                )
+                id_item = str(
+                    cur.execute(
+                        f"select id_item from items WHERE time = '{now}'"
+                    ).fetchone()[0]
+                )
 
-                cur.execute("insert into prices (id_item, item, price, time, link, information) " +
-                        "values (?, ? ,? , ? , ?, ?)",
-                        (id_item, item, price, now, self.link.get(), information))
+                cur.execute(
+                    "insert into prices (id_item, item, price, time, link, information) "
+                    + "values (?, ? ,? , ? , ?, ?)",
+                    (id_item, item, price, now, self.link.get(), information),
+                )
 
         except sqlite3.DatabaseError as err:
             # Для обновления интерфейса из фонового потока используйте self.after
-            self.after(0, lambda: ct.messagebox.showerror(self.parent.app_title,
-                                                          "При сохранении записи возникла ошибка: " + str(err),
-                                                          parent=self))
+            self.after(
+                0,
+                lambda: ct.messagebox.showerror(
+                    self.parent.app_title,
+                    "При сохранении записи возникла ошибка: " + str(err),
+                    parent=self,
+                ),
+            )
         else:
             self.after(0, self.parent.load_data)
         self.parent.after(0, self.parent.hide_activity)

@@ -26,13 +26,14 @@ from modules.settings import Settings
 
 
 config = configparser.ConfigParser()
-config.read('settings.ini')
+config.read("settings.ini")
 
 # Получение настройки
-interval = config.getint('DEFAULT', 'check_price_interval')
+interval = config.getint("DEFAULT", "check_price_interval")
 check_price_interval = interval
-interval = config.getint('DEFAULT', 'price_range_for_save_to_db')
+interval = config.getint("DEFAULT", "price_range_for_save_to_db")
 price_range_for_save_to_db = interval
+
 
 class Application(tkinter.Tk):
     app_title = "Учёт цен"
@@ -43,22 +44,26 @@ class Application(tkinter.Tk):
         super().__init__()
 
         # Настройка логирования
-        logging.basicConfig(filename='app.log', filemode='w', format='%(name)s - %(levelname)s - %(message)s',
-                            level=logging.INFO)
-        logging.info('Логирование началось самый старт')
+        logging.basicConfig(
+            filename="app.log",
+            filemode="w",
+            format="%(name)s - %(levelname)s - %(message)s",
+            level=logging.INFO,
+        )
+        logging.info("Логирование началось самый старт")
 
         try:
-            if getattr(sys, 'frozen', False):
+            if getattr(sys, "frozen", False):
                 dir_path = sys._MEIPASS
             else:
                 dir_path = os.path.dirname(os.path.abspath(__file__))
 
-            db_dir = os.path.join(dir_path, 'data')
+            db_dir = os.path.join(dir_path, "data")
 
             if not os.path.exists(db_dir):
                 os.makedirs(db_dir)
 
-            db_path = os.path.join(db_dir, 'tab.db')
+            db_path = os.path.join(db_dir, "tab.db")
 
             self.countter = 0
             self.con = sqlite3.connect(db_path)
@@ -72,16 +77,19 @@ class Application(tkinter.Tk):
             window_height = self.winfo_reqheight()
             position_right = int(self.winfo_screenwidth() / 2 - window_width / 2)
             position_down = int(self.winfo_screenheight() / 2 - window_height / 2)
-            self.geometry(f"{window_width}x{window_height}+{position_right}+{position_down}")
-            self.attributes('-topmost', True)  # Поверх всех окон
-            self.after_idle(self.attributes, '-topmost', False)  # Затем возвращаем обычный режим
+            self.geometry(
+                f"{window_width}x{window_height}+{position_right}+{position_down}"
+            )
+            self.attributes("-topmost", True)  # Поверх всех окон
+            self.after_idle(
+                self.attributes, "-topmost", False
+            )  # Затем возвращаем обычный режим
 
             self.protocol("WM_DELETE_WINDOW", self.exitstray)
             self.mainloop()
-            logging.info('Логирование началось init')  # Запись по умолчанию
+            logging.info("Логирование началось init")  # Запись по умолчанию
         except Exception as e:
             logging.error("Произошла ошибка: %s", e)
-
 
     def sch(self):
         try:
@@ -100,12 +108,12 @@ class Application(tkinter.Tk):
                     threadupdate.daemon = True
                     threadupdate.start()
 
-            logging.info('Логирование началось (поток)')  # Запись по умолчанию
+            logging.info("Логирование началось (поток)")  # Запись по умолчанию
         except Exception as e:
             logging.error("Произошла ошибка: %s", e)
 
     def exitstray(self):
-        logging.info('Логирование началось: свернуто')
+        logging.info("Логирование началось: свернуто")
 
         def action():
             try:
@@ -117,7 +125,7 @@ class Application(tkinter.Tk):
                 self.load_data()
                 self.lift()  # Поднимаем окно на передний план
                 self.focus_force()  # Принудительно устанавливаем фокус на окне
-                logging.info('Логирование началось разворачивание')
+                logging.info("Логирование началось разворачивание")
             except Exception as e:
                 logging.error("Произошла ошибка: %s", e)
 
@@ -129,17 +137,18 @@ class Application(tkinter.Tk):
                 self.stop_event = threading.Event()
                 self.schprocess = threading.Thread(target=self.sch)
                 self.schprocess.start()
-            logging.info('Логирование началось tray основа')
+            logging.info("Логирование началось tray основа")
             self.withdraw()
             image = Image.open("images/icon.ico")
-            self.icon = pystray.Icon("name", image, "Check price",
-                                     menu=pystray.Menu(item('Развернуть', action), item('Выйти', exitall)))
+            self.icon = pystray.Icon(
+                "name",
+                image,
+                "Check price",
+                menu=pystray.Menu(item("Развернуть", action), item("Выйти", exitall)),
+            )
             self.icon.run()
         except Exception as e:
             logging.error("Произошла ошибка: %s", e)
-
-
-
 
     def create_widgets(self):
         self.add_image = tkinter.PhotoImage(file=r"images/add.gif")
@@ -153,23 +162,35 @@ class Application(tkinter.Tk):
         filemenu = tkinter.Menu(mainmenu, tearoff=False)
 
         self.editmenu = tkinter.Menu(mainmenu, tearoff=False)
-        self.editmenu.add_command(label="Добавить", accelerator="Ins",
-                                  image=self.add_image,
-                                  compound=tkinter.LEFT,
-                                  command=self.add_record)
-        self.editmenu.add_command(label="Изменить", accelerator="F2",
-                                  image=self.edit_image,
-                                  compound=tkinter.LEFT,
-                                  command=self.edit_record)
-        self.editmenu.add_command(label="Создать график", accelerator="F5",
-                                  image=self.graph_image,
-                                  compound=tkinter.LEFT,
-                                  command=self.create_graph)
+        self.editmenu.add_command(
+            label="Добавить",
+            accelerator="Ins",
+            image=self.add_image,
+            compound=tkinter.LEFT,
+            command=self.add_record,
+        )
+        self.editmenu.add_command(
+            label="Изменить",
+            accelerator="F2",
+            image=self.edit_image,
+            compound=tkinter.LEFT,
+            command=self.edit_record,
+        )
+        self.editmenu.add_command(
+            label="Создать график",
+            accelerator="F5",
+            image=self.graph_image,
+            compound=tkinter.LEFT,
+            command=self.create_graph,
+        )
         self.editmenu.add_separator()
-        self.editmenu.add_command(label="Удалить", accelerator="F8",
-                                  image=self.delete_image,
-                                  compound=tkinter.LEFT,
-                                  command=self.delete_record)
+        self.editmenu.add_command(
+            label="Удалить",
+            accelerator="F8",
+            image=self.delete_image,
+            compound=tkinter.LEFT,
+            command=self.delete_record,
+        )
         mainmenu.add_cascade(label="Правка", menu=self.editmenu)
 
         helpmenu = tkinter.Menu(mainmenu, tearoff=False)
@@ -177,22 +198,25 @@ class Application(tkinter.Tk):
         mainmenu.add_cascade(label="Справка", menu=helpmenu)
         mainmenu.add_command(label="Настройки", command=self.open_settings)
 
-
         self.search = tkinter.StringVar()
         self.search.set("")
 
         frm = tkinter.ttk.Frame(self)
         entSearch = ct.CTkEntry(frm, textvariable=self.search)
         entSearch.grid(row=0, column=0, sticky="we")
-        btnSearch = tkinter.ttk.Button(frm, image=self.search_image,
-                                       command=self.load_data)
+        btnSearch = tkinter.ttk.Button(
+            frm, image=self.search_image, command=self.load_data
+        )
         btnSearch.grid(row=0, column=1)
         frm.grid_columnconfigure(0, weight=1)
         frm.grid(row=0, column=0, columnspan=2, sticky="we")
 
-        self.trwPB = tkinter.ttk.Treeview(self, columns=("id_item", "item", "price", "time", "link", "information"),
-                                          displaycolumns="#all",
-                                          show="headings")
+        self.trwPB = tkinter.ttk.Treeview(
+            self,
+            columns=("id_item", "item", "price", "time", "link", "information"),
+            displaycolumns="#all",
+            show="headings",
+        )
         self.trwPB.column("id_item", minwidth=100)
         self.trwPB.column("item", minwidth=100)
         self.trwPB.column("price", minwidth=100)
@@ -208,8 +232,9 @@ class Application(tkinter.Tk):
         self.trwPB.heading("information", text="Информация")
 
         self.trwPB.grid(row=1, column=0, sticky="wnes")
-        hs = tkinter.ttk.Scrollbar(self, orient=tkinter.HORIZONTAL,
-                                   command=self.trwPB.xview)
+        hs = tkinter.ttk.Scrollbar(
+            self, orient=tkinter.HORIZONTAL, command=self.trwPB.xview
+        )
         hs.grid(row=2, column=0, sticky="we")
         vs = tkinter.ttk.Scrollbar(self, command=self.trwPB.yview)
         vs.grid(row=1, column=1, sticky="ns")
@@ -228,7 +253,9 @@ class Application(tkinter.Tk):
 
         self.trwPB.bind("<Double-1>", self.on_double_click)
 
-        self.update_button = ct.CTkButton(frm, text="Проверить данные", command=self.update)
+        self.update_button = ct.CTkButton(
+            frm, text="Проверить данные", command=self.update
+        )
         self.update_button.grid(row=0, column=3, padx=20, pady=5)
 
         button = ct.CTkButton(frm, text="Товары", command=self.newwindow)
@@ -253,28 +280,45 @@ class Application(tkinter.Tk):
         cur = self.con.cursor()
         s = self.search.get()
         if s:
-            cur.execute("SELECT * FROM prices WHERE id_item LIKE ? ORDER BY id_record DESC;", (s + "%",))
+            cur.execute(
+                "SELECT * FROM prices WHERE id_item LIKE ? ORDER BY id_record DESC;",
+                (s + "%",),
+            )
         else:
             cur.execute("SELECT * FROM prices ORDER BY id_record DESC;")
         for rec in cur:
-            self.trwPB.insert("", "end", text=rec[0],
-                              values=(rec[1], rec[2], rec[3], rec[4], rec[5], rec[6]))
+            self.trwPB.insert(
+                "",
+                "end",
+                text=rec[0],
+                values=(rec[1], rec[2], rec[3], rec[4], rec[5], rec[6]),
+            )
         cur.close()
 
     def add_record(self):
-        rec = {"id_record": None, "id_item": "", "item": "", "price": "", "time": "", "link": "", "information": ""}
+        rec = {
+            "id_record": None,
+            "id_item": "",
+            "item": "",
+            "price": "",
+            "time": "",
+            "link": "",
+            "information": "",
+        }
         Record(parent=self, record=rec)
 
     def edit_record(self):
         r = self.trwPB.focus()
         if r:
-            rec = {"id_record": self.trwPB.item(r, option="text"),
-                   "id_item": self.trwPB.set(r, column="id_item"),
-                   "item": self.trwPB.set(r, column="item"),
-                   "price": self.trwPB.set(r, column="price"),
-                   "time": self.trwPB.set(r, column="time"),
-                   "link": self.trwPB.set(r, column="link"),
-                   "information": self.trwPB.set(r, column="information")}
+            rec = {
+                "id_record": self.trwPB.item(r, option="text"),
+                "id_item": self.trwPB.set(r, column="id_item"),
+                "item": self.trwPB.set(r, column="item"),
+                "price": self.trwPB.set(r, column="price"),
+                "time": self.trwPB.set(r, column="time"),
+                "link": self.trwPB.set(r, column="link"),
+                "information": self.trwPB.set(r, column="information"),
+            }
             Record(parent=self, record=rec)
 
     def create_graph(self):
@@ -284,43 +328,65 @@ class Application(tkinter.Tk):
             selected_item = self.trwPB.selection()[0]
             values = self.trwPB.item(selected_item)
             value = values.get("values")[4]
-            prices = cur.execute(f"select price from prices WHERE link = '{value}'").fetchall()
-            prices = ([x[0] for x in prices])
-            timeall = cur.execute(f"select time from prices WHERE link = '{value}'").fetchall()
-            timeall = ([x[0] for x in timeall])
+            prices = cur.execute(
+                f"select price from prices WHERE link = '{value}'"
+            ).fetchall()
+            prices = [x[0] for x in prices]
+            timeall = cur.execute(
+                f"select time from prices WHERE link = '{value}'"
+            ).fetchall()
+            timeall = [x[0] for x in timeall]
 
             if len(prices) < 2:
-                tkinter.messagebox.showerror("Ошибка", "Для создания графика требуется как минимум две записи",
-                                             parent=self)
+                tkinter.messagebox.showerror(
+                    "Ошибка",
+                    "Для создания графика требуется как минимум две записи",
+                    parent=self,
+                )
             else:
-                fig = go.Figure(data=go.Scatter(x=timeall, y=prices, mode='lines+markers', name='Цены'))
-                fig.update_layout(title='График изменения цен на товар', xaxis_title='Время', yaxis_title='Цена')
+                fig = go.Figure(
+                    data=go.Scatter(
+                        x=timeall, y=prices, mode="lines+markers", name="Цены"
+                    )
+                )
+                fig.update_layout(
+                    title="График изменения цен на товар",
+                    xaxis_title="Время",
+                    yaxis_title="Цена",
+                )
                 fig.write_html("graph.html")  # Сохраняем график в HTML-файл
-                webbrowser.open('file://' + os.path.realpath("graph.html"))  # Открываем HTML-файл в браузере
+                webbrowser.open(
+                    "file://" + os.path.realpath("graph.html")
+                )  # Открываем HTML-файл в браузере
 
             self.con.commit()
 
     def delete_record(self):
         r = self.trwPB.focus()
-        if r and tkinter.messagebox.askyesno(Application.app_title,
-                                             "Удалить запись?",
-                                             default=tkinter.messagebox.NO,
-                                             parent=self):
+        if r and tkinter.messagebox.askyesno(
+            Application.app_title,
+            "Удалить запись?",
+            default=tkinter.messagebox.NO,
+            parent=self,
+        ):
             id_row = self.trwPB.item(r, option="text")
             cur = self.con.cursor()
             try:
                 cur.execute("delete from prices where id_record=?", (id_row,))
             except sqlite3.DatabaseError as err:
-                tkinter.messagebox.showerror(Application.app_title,
-                                             "При удалении записи возникла ошибка: " + str(err),
-                                             parent=self)
+                tkinter.messagebox.showerror(
+                    Application.app_title,
+                    "При удалении записи возникла ошибка: " + str(err),
+                    parent=self,
+                )
             else:
                 self.con.commit()
                 self.load_data()
 
     def show_info(self):
-        tkinter.messagebox.showinfo(Application.app_title,
-                                    "© Учёт цен, 2022 г.", parent=self)
+        tkinter.messagebox.showinfo(
+            Application.app_title, "© Учёт цен, 2022 г.", parent=self
+        )
 
     def newwindow(self):
         apps = Products(parent=self)
@@ -340,22 +406,22 @@ class Application(tkinter.Tk):
         self.load_data()
 
     def update_logic(self):
-        if getattr(sys, 'frozen', False):
+        if getattr(sys, "frozen", False):
             dir_path = sys._MEIPASS
         else:
             dir_path = os.path.dirname(os.path.abspath(__file__))
 
-        db_dir = os.path.join(dir_path, 'data')
+        db_dir = os.path.join(dir_path, "data")
 
         if not os.path.exists(db_dir):
             os.makedirs(db_dir)
 
-        db_path = os.path.join(db_dir, 'tab.db')
+        db_path = os.path.join(db_dir, "tab.db")
 
         con = sqlite3.connect(db_path)
         cur = con.cursor()
         link = cur.execute(f"select link from items").fetchall()
-        link = ([x[0] for x in link])
+        link = [x[0] for x in link]
         link_count = len(link)
         price_interval = 0
 
@@ -369,12 +435,12 @@ class Application(tkinter.Tk):
                 except:
                     information = "Информации нет"
                 try:
-                    meta_tag = html.find('meta', {'itemprop': 'price'})
-                    price = int(meta_tag['content'])
+                    meta_tag = html.find("meta", {"itemprop": "price"})
+                    price = int(meta_tag["content"])
                 except:
                     try:
                         price = html.find("span", class_="text_att").text
-                        price = price.replace('₸', '')  # remove space and "₸" symbol
+                        price = price.replace("₸", "")  # remove space and "₸" symbol
                         price = int(price)
                     except:
                         price = 0
@@ -385,10 +451,12 @@ class Application(tkinter.Tk):
                     r = requests.get(link[i])
                     html = BS(r.content, "html.parser")
                     item = html.find("h1").text
-                    information = "Для дополнительной информации перейдите на страницу товара"
+                    information = (
+                        "Для дополнительной информации перейдите на страницу товара"
+                    )
                     try:
-                        price = html.find('p', class_='Typography__Heading_H1').text
-                        price = price.replace('₸', '')
+                        price = html.find("p", class_="Typography__Heading_H1").text
+                        price = price.replace("₸", "")
                         price = int(price)
                     except:
                         price = 0
@@ -400,56 +468,64 @@ class Application(tkinter.Tk):
             elif "kaspi" in link[i]:
                 try:
                     html = setup_driver(link[i])
-                    soup = BS(html, 'html.parser')
+                    soup = BS(html, "html.parser")
                 except Exception as e:
                     logging.error(f"Произошла ошибка: {e}")
 
                 try:
-                    item = soup.find('h1', class_='item__heading').text.strip()
+                    item = soup.find("h1", class_="item__heading").text.strip()
                 except:
                     item = "Информации нет"
                 try:
-                    price_text = soup.find('div', class_='item__price-once').text.strip()
-                    price = int(''.join(filter(str.isdigit, price_text)))
+                    price_text = soup.find(
+                        "div", class_="item__price-once"
+                    ).text.strip()
+                    price = int("".join(filter(str.isdigit, price_text)))
                 except:
                     price = 0
                     item = "Товара нет в наличии"
                 try:
-                    description = soup.find('div', class_='item__description-text')
-                    description_items = description.find_all('li')
-                    information = ' / '.join(item.get_text().strip() for item in description_items)
+                    description = soup.find("div", class_="item__description-text")
+                    description_items = description.find_all("li")
+                    information = " / ".join(
+                        item.get_text().strip() for item in description_items
+                    )
                 except:
                     information = "Информации нет"
 
             elif "ozon" in link[i]:
                 html = setup_driver_ozon(link[i])
-                soup = BS(html, 'html.parser')
+                soup = BS(html, "html.parser")
                 try:
                     item = soup.find(attrs={"data-widget": "webProductHeading"})
                     item = item.get_text().strip()
                 except:
                     item = "Информации нет"
                 try:
-                    price_block = soup.find('div', class_='lo2')
+                    price_block = soup.find("div", class_="lo2")
                     price_text = price_block.get_text().strip()
-                    price_text = price_text.split('₸')[0]
-                    price = int(''.join(filter(str.isdigit, price_text)))
+                    price_text = price_text.split("₸")[0]
+                    price = int("".join(filter(str.isdigit, price_text)))
                 except:
                     price = 0
                     item = "Товара нет в наличии"
                 try:
-                    description_block = soup.find('div', class_='RA-a1')
+                    description_block = soup.find("div", class_="RA-a1")
                     information = description_block.get_text().strip()
                 except:
                     information = "Информации нет"
 
             else:
-                tkinter.messagebox.showerror("Ошибка", f"Неизвестный магазин: {link[i]}")
+                tkinter.messagebox.showerror(
+                    "Ошибка", f"Неизвестный магазин: {link[i]}"
+                )
                 continue
 
             time = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-            timeall = cur.execute(f"select time from prices WHERE link = '{link[i]}'").fetchall()
-            timeall = ([x[0] for x in timeall])
+            timeall = cur.execute(
+                f"select time from prices WHERE link = '{link[i]}'"
+            ).fetchall()
+            timeall = [x[0] for x in timeall]
 
             record_count = len(timeall)
             if record_count != 0:
@@ -458,19 +534,24 @@ class Application(tkinter.Tk):
                     current_time = datetime.strptime(timeall[p], "%m/%d/%Y %H:%M:%S")
                     if lastrrecordtime < current_time:
                         lastrrecordtime = current_time
-                lastrrecordtime = lastrrecordtime.strftime(
-                    "%m/%d/%Y %H:%M:%S")
+                lastrrecordtime = lastrrecordtime.strftime("%m/%d/%Y %H:%M:%S")
                 lastrecordid = cur.execute(
-                    f"select id_record from prices WHERE link = '{link[i]}' AND time = '{lastrrecordtime}'").fetchone()[
-                    0]
+                    f"select id_record from prices WHERE link = '{link[i]}' AND time = '{lastrrecordtime}'"
+                ).fetchone()[0]
                 print(f"Last record ID: {lastrecordid}")
 
-                lastprice = cur.execute(f"select price from prices WHERE id_record = '{lastrecordid}'").fetchone()[0]
+                lastprice = cur.execute(
+                    f"select price from prices WHERE id_record = '{lastrecordid}'"
+                ).fetchone()[0]
                 print(f"Last price: {lastprice}")
 
                 if lastprice != price:
                     print(f"Price change detected: {lastprice} -> {price}")
-                    id_item = str(cur.execute(f"select id_item from items WHERE link = '{link[i]}'").fetchone()[0])
+                    id_item = str(
+                        cur.execute(
+                            f"select id_item from items WHERE link = '{link[i]}'"
+                        ).fetchone()[0]
+                    )
                     price_interval_by_product = lastprice - price
                     print(f"Price interval by product: {price_interval_by_product}")
                     if price_interval_by_product < 0:
@@ -478,24 +559,28 @@ class Application(tkinter.Tk):
                     if price_interval_by_product > price_interval:
                         price_interval = price_interval_by_product
                     if price_range_for_save_to_db < price_interval_by_product:
-                        cur.execute("insert into prices (id_item, item, price, time, link, information) " +
-                                "values (?, ? ,? , ? , ?, ?)",
-                                (id_item, item, price, time, link[i], information))
-
-
+                        cur.execute(
+                            "insert into prices (id_item, item, price, time, link, information) "
+                            + "values (?, ? ,? , ? , ?, ?)",
+                            (id_item, item, price, time, link[i], information),
+                        )
 
             else:
-                id_item = str(cur.execute(f"select id_item from items WHERE link = '{link[i]}'").fetchone()[0])
+                id_item = str(
+                    cur.execute(
+                        f"select id_item from items WHERE link = '{link[i]}'"
+                    ).fetchone()[0]
+                )
 
-                cur.execute("insert into prices (id_item, item, price, time, link, information) " +
-                            "values (?, ? ,? , ? , ?, ?)",
-                            (id_item, item, price, time, link[i], information))
+                cur.execute(
+                    "insert into prices (id_item, item, price, time, link, information) "
+                    + "values (?, ? ,? , ? , ?, ?)",
+                    (id_item, item, price, time, link[i], information),
+                )
         if price_interval < price_range_for_save_to_db:
-            tkinter.messagebox.showinfo("Уведомление",
-                                        "Изменений нет", parent=self)
+            tkinter.messagebox.showinfo("Уведомление", "Изменений нет", parent=self)
         else:
-            tkinter.messagebox.showinfo("Уведомление",
-                                        "Цены изменились", parent=self)
+            tkinter.messagebox.showinfo("Уведомление", "Цены изменились", parent=self)
         con.commit()
         self.after(0, self.update_complete_callback)
 
@@ -508,17 +593,17 @@ class Products(tkinter.Toplevel):
         self.parent = parent
         self.active_operations = 0
         self.configure_activity_indicator()
-        if getattr(sys, 'frozen', False):
+        if getattr(sys, "frozen", False):
             dir_path = sys._MEIPASS
         else:
             dir_path = os.path.dirname(os.path.abspath(__file__))
 
-        db_dir = os.path.join(dir_path, 'data')
+        db_dir = os.path.join(dir_path, "data")
 
         if not os.path.exists(db_dir):
             os.makedirs(db_dir)
 
-        db_path = os.path.join(db_dir, 'tab.db')
+        db_path = os.path.join(db_dir, "tab.db")
 
         self.con = sqlite3.connect(db_path)
         self.create_widgets()
@@ -549,6 +634,7 @@ class Products(tkinter.Toplevel):
 
         # Устанавливаем новые координаты окна
         self.geometry(f"+{x}+{y}")
+
     def create_widgets(self):
         self.add_image = tkinter.PhotoImage(file=r"images/add.gif")
         self.addlink_image = tkinter.PhotoImage(file=r"images/addlink.png")
@@ -563,23 +649,35 @@ class Products(tkinter.Toplevel):
         mainmenu.add_cascade(label="Файл", menu=filemenu)
 
         self.editmenu = tkinter.Menu(mainmenu, tearoff=False)
-        self.editmenu.add_command(label="Добавить", accelerator="Ins",
-                                  image=self.add_image,
-                                  compound=tkinter.LEFT,
-                                  command=self.add_record)
-        self.editmenu.add_command(label="Добавить товар по ссылке", accelerator="F2",
-                                  image=self.addlink_image,
-                                  compound=tkinter.LEFT,
-                                  command=self.add_link)
-        self.editmenu.add_command(label="Изменить", accelerator="F5",
-                                  image=self.edit_image,
-                                  compound=tkinter.LEFT,
-                                  command=self.edit_record)
+        self.editmenu.add_command(
+            label="Добавить",
+            accelerator="Ins",
+            image=self.add_image,
+            compound=tkinter.LEFT,
+            command=self.add_record,
+        )
+        self.editmenu.add_command(
+            label="Добавить товар по ссылке",
+            accelerator="F2",
+            image=self.addlink_image,
+            compound=tkinter.LEFT,
+            command=self.add_link,
+        )
+        self.editmenu.add_command(
+            label="Изменить",
+            accelerator="F5",
+            image=self.edit_image,
+            compound=tkinter.LEFT,
+            command=self.edit_record,
+        )
         self.editmenu.add_separator()
-        self.editmenu.add_command(label="Удалить", accelerator="F8",
-                                  image=self.delete_image,
-                                  compound=tkinter.LEFT,
-                                  command=self.delete_record)
+        self.editmenu.add_command(
+            label="Удалить",
+            accelerator="F8",
+            image=self.delete_image,
+            compound=tkinter.LEFT,
+            command=self.delete_record,
+        )
         mainmenu.add_cascade(label="Правка", menu=self.editmenu)
 
         helpmenu = tkinter.Menu(mainmenu, tearoff=False)
@@ -589,22 +687,28 @@ class Products(tkinter.Toplevel):
         self.search = tkinter.StringVar()
         self.search.set("")
 
-        self.activity_indicator = ct.CTkLabel(self, text="Добавление данных...", font=("Arial", 12))
+        self.activity_indicator = ct.CTkLabel(
+            self, text="Добавление данных...", font=("Arial", 12)
+        )
         self.activity_indicator.grid(row=3, column=0, pady=10, padx=10, sticky="ew")
         self.activity_indicator.grid_remove()  # Скрыть по умолчанию
 
         frm = tkinter.ttk.Frame(self)
         entSearch = ct.CTkEntry(frm, textvariable=self.search)
         entSearch.grid(row=0, column=0, sticky="we")
-        btnSearch = tkinter.ttk.Button(frm, image=self.search_image,
-                                       command=self.load_data)
+        btnSearch = tkinter.ttk.Button(
+            frm, image=self.search_image, command=self.load_data
+        )
         btnSearch.grid(row=0, column=1, pady=5, padx=(1, 15))
         frm.grid_columnconfigure(0, weight=1)
         frm.grid(row=0, column=0, columnspan=2, sticky="we")
 
-        self.trwPB = tkinter.ttk.Treeview(self, columns=("item", "time", "link"),
-                                          displaycolumns="#all",
-                                          show="headings")
+        self.trwPB = tkinter.ttk.Treeview(
+            self,
+            columns=("item", "time", "link"),
+            displaycolumns="#all",
+            show="headings",
+        )
         self.trwPB.column("item", minwidth=100)
         self.trwPB.column("time", minwidth=100)
         self.trwPB.column("link", minwidth=100)
@@ -614,8 +718,9 @@ class Products(tkinter.Toplevel):
         self.trwPB.heading("link", text="Ссылка")
 
         self.trwPB.grid(row=1, column=0, sticky="wnes")
-        hs = tkinter.ttk.Scrollbar(self, orient=tkinter.HORIZONTAL,
-                                   command=self.trwPB.xview)
+        hs = tkinter.ttk.Scrollbar(
+            self, orient=tkinter.HORIZONTAL, command=self.trwPB.xview
+        )
         hs.grid(row=2, column=0, sticky="we")
         vs = tkinter.ttk.Scrollbar(self, command=self.trwPB.yview)
         vs.grid(row=1, column=1, sticky="ns")
@@ -655,13 +760,13 @@ class Products(tkinter.Toplevel):
         cur = self.con.cursor()
         s = self.search.get()
         if s:
-            cur.execute("select * from items where item like ? order by id_item;",
-                        (s + "%",))
+            cur.execute(
+                "select * from items where item like ? order by id_item;", (s + "%",)
+            )
         else:
             cur.execute("select * from items order by id_item;")
         for rec in cur:
-            self.trwPB.insert("", "end", text=rec[0],
-                              values=(rec[1], rec[2], rec[3]))
+            self.trwPB.insert("", "end", text=rec[0], values=(rec[1], rec[2], rec[3]))
         cur.close()
 
     def add_record(self):
@@ -679,7 +784,9 @@ class Products(tkinter.Toplevel):
 
     def update_activity_indicator(self):
         if self.active_operations > 0:
-            self.activity_indicator.configure(text=f"Добавление данных... ({self.active_operations})")
+            self.activity_indicator.configure(
+                text=f"Добавление данных... ({self.active_operations})"
+            )
         else:
             self.activity_indicator.configure(text="")
 
@@ -699,27 +806,40 @@ class Products(tkinter.Toplevel):
     def edit_record(self):
         r = self.trwPB.focus()
         if r:
-            rec = {"id_item": self.trwPB.item(r, option="text"),
-                   "item": self.trwPB.set(r, column="item"),
-                   "time": self.trwPB.set(r, column="time"),
-                   "link": self.trwPB.set(r, column="link")}
+            rec = {
+                "id_item": self.trwPB.item(r, option="text"),
+                "item": self.trwPB.set(r, column="item"),
+                "time": self.trwPB.set(r, column="time"),
+                "link": self.trwPB.set(r, column="link"),
+            }
             Recordtop(parent=self, record=rec)
 
     def delete_record(self):
         r = self.trwPB.focus()
         if r:
             id_row = self.trwPB.item(r, option="text")
-            if tkinter.messagebox.askyesno(Application.app_title, "Удалить запись товара?",
-                                           default=tkinter.messagebox.NO, parent=self):
-                if tkinter.messagebox.askyesno(Application.app_title, "Удалить историю цен товара?",
-                                               default=tkinter.messagebox.NO, parent=self):
+            if tkinter.messagebox.askyesno(
+                Application.app_title,
+                "Удалить запись товара?",
+                default=tkinter.messagebox.NO,
+                parent=self,
+            ):
+                if tkinter.messagebox.askyesno(
+                    Application.app_title,
+                    "Удалить историю цен товара?",
+                    default=tkinter.messagebox.NO,
+                    parent=self,
+                ):
                     cur = self.con.cursor()
                     try:
                         cur.execute("delete from items where id_item=?", (id_row,))
                         cur.execute("delete from prices where id_item=?", (id_row,))
                     except sqlite3.DatabaseError as err:
-                        tkinter.messagebox.showerror(Application.app_title,
-                                                     "При удалении записи возникла ошибка: " + str(err), parent=self)
+                        tkinter.messagebox.showerror(
+                            Application.app_title,
+                            "При удалении записи возникла ошибка: " + str(err),
+                            parent=self,
+                        )
                     else:
                         self.con.commit()
                         self.load_data()
@@ -728,14 +848,16 @@ class Products(tkinter.Toplevel):
                     try:
                         cur.execute("delete from items where id_item=?", (id_row,))
                     except sqlite3.DatabaseError as err:
-                        tkinter.messagebox.showerror(Application.app_title,
-                                                     "При удалении записи возникла ошибка: " + str(err), parent=self)
+                        tkinter.messagebox.showerror(
+                            Application.app_title,
+                            "При удалении записи возникла ошибка: " + str(err),
+                            parent=self,
+                        )
                     else:
                         self.con.commit()
                         self.load_data()
 
     def show_info(self):
-        tkinter.messagebox.showinfo(Application.app_title,
-                                    "© Учёт цен, 2022 г.", parent=self)
-
-
+        tkinter.messagebox.showinfo(
+            Application.app_title, "© Учёт цен, 2022 г.", parent=self
+        )
