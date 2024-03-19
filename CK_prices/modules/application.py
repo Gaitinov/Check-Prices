@@ -481,6 +481,11 @@ class Application(tkinter.Tk):
             elif "kaspi" in link[i]:
                 try:
                     html = setup_driver(link[i])
+                    if html is None:
+                        logging.error(
+                            "Не удалось получить данные с kaspi, переход к следующей записи"
+                        )
+                        continue
                     soup = BS(html, "html.parser")
                 except Exception as e:
                     logging.error(f"Произошла ошибка: {e}")
@@ -508,6 +513,11 @@ class Application(tkinter.Tk):
 
             elif "ozon" in link[i]:
                 html = setup_driver_ozon(link[i])
+                if html is None:
+                    logging.error(
+                        "Не удалось получить данные с ozon, переход к следующей записи"
+                    )
+                    continue
                 soup = BS(html, "html.parser")
                 try:
                     item = soup.find(attrs={"data-widget": "webProductHeading"})
@@ -754,7 +764,9 @@ class Products(tkinter.Toplevel):
 
         context_menu = tkinter.Menu(self, tearoff=0)
         context_menu.add_command(label="Добавить", command=self.add_record)
-        context_menu.add_command(label="Добавить товар по ссылке", command=self.add_link)
+        context_menu.add_command(
+            label="Добавить товар по ссылке", command=self.add_link
+        )
         context_menu.add_command(label="Изменить", command=self.edit_record)
         context_menu.add_command(label="Удалить", command=self.delete_record)
 

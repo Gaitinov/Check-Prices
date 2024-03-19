@@ -100,6 +100,11 @@ def update():
         elif "kaspi" in link[i]:
             try:
                 html = setup_driver(link[i])
+                if html is None:
+                    logging.error(
+                        "Не удалось получить данные с kaspi, переход к следующей записи"
+                    )
+                    continue
                 soup = BS(html, "html.parser")
             except Exception as e:
                 logging.error(f"Произошла ошибка: {e}")
@@ -125,6 +130,11 @@ def update():
         elif "ozon" in link[i]:
             try:
                 html = setup_driver_ozon(link[i])
+                if html is None:
+                    logging.error(
+                        "Не удалось получить данные с ozon, переход к следующей записи"
+                    )
+                    continue
                 soup = BS(html, "html.parser")
             except Exception as e:
                 logging.error(f"Произошла ошибка: {e}")

@@ -19,18 +19,24 @@ def setup_driver_ozon(url, max_attempts=3):
                     logging.info("Reload button is visible, clicking.")
                     page.click("button#reload-button")
 
-
-                if not page.wait_for_selector("#section-description", state="attached", timeout=50000):
+                if not page.wait_for_selector(
+                    "#section-description", state="attached", timeout=50000
+                ):
                     logging.error(
-                        "Timeout error: '#section-description' selector not found within the given timeframe.")
+                        "Timeout error: '#section-description' selector not found within the given timeframe."
+                    )
                     raise Exception("Selector '#section-description' not found")
 
                 # Ensuring the targeted section is in view
-                page.eval_on_selector("#section-description", "element => element.scrollIntoView()")
+                page.eval_on_selector(
+                    "#section-description", "element => element.scrollIntoView()"
+                )
                 html = page.content()
                 return html
         except Exception as e:
-            logging.error(f"Error occurred while fetching data from Ozon on attempt {attempt + 1}: {str(e)}")
+            logging.error(
+                f"Error occurred while fetching data from Ozon on attempt {attempt + 1}: {str(e)}"
+            )
             time.sleep(5)
             attempt += 1
 
