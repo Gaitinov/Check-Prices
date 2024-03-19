@@ -682,10 +682,6 @@ class Products(tkinter.Toplevel):
         mainmenu = tkinter.Menu(self)
         self["menu"] = mainmenu
 
-        filemenu = tkinter.Menu(mainmenu, tearoff=False)
-        filemenu.add_command(label="Выход", command=self.destroy)
-        mainmenu.add_cascade(label="Файл", menu=filemenu)
-
         self.editmenu = tkinter.Menu(mainmenu, tearoff=False)
         self.editmenu.add_command(
             label="Добавить",

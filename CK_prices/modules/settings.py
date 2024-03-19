@@ -53,7 +53,7 @@ class Settings(tkinter.Toplevel):
 
         self.label_min_reviews_count = ct.CTkLabel(
             frame,
-            text="Введите минимальное количество отзывов для сохранения в базу данных:",
+            text="Введите минимальное количество отзывов у магазина kaspi при проверке цен:",
             anchor="w",
         )
         self.label_min_reviews_count.pack(pady=10, padx=10, fill="x")

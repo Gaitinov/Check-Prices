@@ -23,7 +23,7 @@ class Record(ct.CTkToplevel):
         self.grab_set()
 
     def create_widgets(self, record):
-        grid_params = {"padx": 4, "pady": 4}
+        grid_params = {"padx": 10, "pady": 6}
 
         self.id_record = record["id_record"]
         self.id_item = ct.StringVar()
@@ -39,44 +39,50 @@ class Record(ct.CTkToplevel):
         self.information = ct.StringVar()
         self.information.set(record["information"])
 
-        lblid_item = ct.CTkLabel(self, text="id_item")
+        frame = ct.CTkFrame(self, corner_radius=10, bg_color="#f0f0f0")
+        frame.pack(padx=20, pady=20, fill="both", expand=True)
+
+        self.id_item = ct.StringVar(value=record.get("id_item", ""))
+        lblid_item = ct.CTkLabel(frame, text="ID товара")
         lblid_item.grid(row=0, column=0, **grid_params)
-        self.entid_item = ct.CTkEntry(self, textvariable=self.id_item)
-        self.entid_item.grid(row=0, column=1, sticky="w", **grid_params)
+        self.entid_item = ct.CTkEntry(frame, textvariable=self.id_item, width=600)
+        self.entid_item.grid(row=0, column=1, sticky="we", **grid_params)
 
-        lblitem = ct.CTkLabel(self, text="Товар")
+        self.item = ct.StringVar(value=record.get("item", ""))
+        lblitem = ct.CTkLabel(frame, text="Товар")
         lblitem.grid(row=1, column=0, **grid_params)
-        self.entitem = ct.CTkEntry(self, textvariable=self.item)
-        self.entitem.grid(row=1, column=1, sticky="w", **grid_params)
+        self.entitem = ct.CTkEntry(frame, textvariable=self.item, width=600)
+        self.entitem.grid(row=1, column=1, sticky="we", **grid_params)
 
-        lblprice = ct.CTkLabel(self, text="Цена")
+        self.price = ct.StringVar(value=record.get("price", ""))
+        lblprice = ct.CTkLabel(frame, text="Цена")
         lblprice.grid(row=2, column=0, **grid_params)
-        self.entprice = ct.CTkEntry(self, textvariable=self.price)
-        self.entprice.grid(row=2, column=1, sticky="w", **grid_params)
+        self.entprice = ct.CTkEntry(frame, textvariable=self.price, width=600)
+        self.entprice.grid(row=2, column=1, sticky="we", **grid_params)
 
-        lbltime = ct.CTkLabel(self, text="Время")
+        self.time = ct.StringVar(value=record.get("time", ""))
+        lbltime = ct.CTkLabel(frame, text="Время")
         lbltime.grid(row=3, column=0, **grid_params)
-        self.enttime = ct.CTkEntry(self, textvariable=self.time)
-        self.enttime.grid(row=3, column=1, sticky="w", **grid_params)
+        self.enttime = ct.CTkEntry(frame, textvariable=self.time, width=600)
+        self.enttime.grid(row=3, column=1, sticky="we", **grid_params)
 
-        lbllink = ct.CTkLabel(self, text="Ссылка")
+        self.link = ct.StringVar(value=record.get("link", ""))
+        lbllink = ct.CTkLabel(frame, text="Ссылка")
         lbllink.grid(row=4, column=0, **grid_params)
-        self.entlink = ct.CTkEntry(self, textvariable=self.link)
-        self.entlink.grid(row=4, column=1, sticky="w", **grid_params)
+        self.entlink = ct.CTkEntry(frame, textvariable=self.link, width=600)
+        self.entlink.grid(row=4, column=1, sticky="we", **grid_params)
 
-        lblinformation = ct.CTkLabel(self, text="Информация")
+        self.information = ct.StringVar(value=record.get("information", ""))
+        lblinformation = ct.CTkLabel(frame, text="Информация")
         lblinformation.grid(row=5, column=0, **grid_params)
-        self.entinformation = ct.CTkEntry(self, textvariable=self.information)
-        self.entinformation.grid(row=5, column=1, sticky="w", **grid_params)
+        self.entinformation = ct.CTkEntry(frame, textvariable=self.information, width=400)
+        self.entinformation.grid(row=5, column=1, sticky="we", **grid_params)
 
-        self.btnOK = ct.CTkButton(self, text="ОК", command=self.save_record)
+        self.btnOK = ct.CTkButton(frame, text="ОК", command=self.save_record)
         self.btnOK.grid(row=6, column=0, sticky="e", **grid_params)
-
-        self.btnCancel = ct.CTkButton(self, text="Отмена", command=self.destroy)
+        self.btnCancel = ct.CTkButton(frame, text="Отмена", command=self.destroy)
         self.btnCancel.grid(row=6, column=1, sticky="e", **grid_params)
 
-        self.bind_all("<Alt-KeyPress-b>", lambda evt: self.entFIO.focus_set())
-        self.bind_all("<Alt-KeyPress-y>", lambda evt: self.entBirth.focus_set())
         self.bind_all("<KeyPress-Return>", lambda evt: self.btnOK.invoke())
         self.bind_all("<KeyPress-Escape>", lambda evt: self.btnCancel.invoke())
 
@@ -149,7 +155,7 @@ class Recordtop(ct.CTkToplevel):
         self.grab_set()
 
     def create_widgets(self, record):
-        grid_params = {"padx": 4, "pady": 4}
+        grid_params = {"padx": 10, "pady": 6}
 
         self.id_item = record["id_item"]
         self.item = ct.StringVar()
@@ -159,26 +165,32 @@ class Recordtop(ct.CTkToplevel):
         self.link = ct.StringVar()
         self.link.set(record["link"])
 
-        lblitem = ct.CTkLabel(self, text="Товар")
+        frame = ct.CTkFrame(self, corner_radius=10, bg_color="#f0f0f0")
+        frame.pack(padx=20, pady=20, fill="both", expand=True)
+
+        self.id_item = record.get("id_item", "")
+        self.item = ct.StringVar(value=record.get("item", ""))
+        lblitem = ct.CTkLabel(frame, text="Товар")
         lblitem.grid(row=0, column=0, **grid_params)
-        self.entitem = ct.CTkEntry(self, textvariable=self.item)
-        self.entitem.grid(row=0, column=1, sticky="w", **grid_params)
+        self.entitem = ct.CTkEntry(frame, textvariable=self.item, width=600)
+        self.entitem.grid(row=0, column=1, sticky="we", **grid_params)
 
-        lbltime = ct.CTkLabel(self, text="Время")
+        self.time = ct.StringVar(value=record.get("time", ""))
+        lbltime = ct.CTkLabel(frame, text="Время")
         lbltime.grid(row=1, column=0, **grid_params)
-        self.enttime = ct.CTkEntry(self, textvariable=self.time)
-        self.enttime.grid(row=1, column=1, sticky="w", **grid_params)
+        self.enttime = ct.CTkEntry(frame, textvariable=self.time, width=600)
+        self.enttime.grid(row=1, column=1, sticky="we", **grid_params)
 
-        lbllink = ct.CTkLabel(self, text="Ссылка")
+        self.link = ct.StringVar(value=record.get("link", ""))
+        lbllink = ct.CTkLabel(frame, text="Ссылка")
         lbllink.grid(row=2, column=0, **grid_params)
-        self.entlink = ct.CTkEntry(self, textvariable=self.link)
-        self.entlink.grid(row=2, column=1, sticky="w", **grid_params)
+        self.entlink = ct.CTkEntry(frame, textvariable=self.link, width=600)
+        self.entlink.grid(row=2, column=1, sticky="we", **grid_params)
 
-        self.btnOK = ct.CTkButton(self, text="ОК", command=self.save_record)
-        self.btnOK.grid(row=5, column=0, sticky="e", **grid_params)
-
-        self.btnCancel = ct.CTkButton(self, text="Отмена", command=self.destroy)
-        self.btnCancel.grid(row=5, column=1, sticky="e", **grid_params)
+        self.btnOK = ct.CTkButton(frame, text="ОК", command=self.save_record)
+        self.btnOK.grid(row=3, column=0, sticky="e", **grid_params)
+        self.btnCancel = ct.CTkButton(frame, text="Отмена", command=self.destroy)
+        self.btnCancel.grid(row=3, column=1, sticky="e", **grid_params)
 
         self.bind_all("<Alt-KeyPress-b>", lambda evt: self.entitem.focus_set())
         self.bind_all("<Alt-KeyPress-y>", lambda evt: self.enttime.focus_set())
@@ -361,20 +373,23 @@ class Recordlink(ct.CTkToplevel):
         self.grab_set()
 
     def create_widgets(self):
-        grid_params = {"padx": 4, "pady": 4}
+        grid_params = {"padx": 10, "pady": 6}
+
+        frame = ct.CTkFrame(self, corner_radius=10, bg_color="#f0f0f0")
+        frame.pack(padx=20, pady=20, fill="both", expand=True)
 
         self.link = ct.StringVar()
         self.link.set("")
 
-        lbllink = ct.CTkLabel(self, text="Ссылка")
+        lbllink = ct.CTkLabel(frame, text="Ссылка")
         lbllink.grid(row=0, column=0, **grid_params)
-        self.entlink = ct.CTkEntry(self, textvariable=self.link)
-        self.entlink.grid(row=0, column=1, sticky="w", **grid_params)
+        self.entlink = ct.CTkEntry(frame, textvariable=self.link, width=600)
+        self.entlink.grid(row=0, column=1, sticky="we", **grid_params)
 
-        self.btnOK = ct.CTkButton(self, text="ОК", command=self.save_record)
+        self.btnOK = ct.CTkButton(frame, text="ОК", command=self.save_record)
         self.btnOK.grid(row=1, column=0, sticky="e", **grid_params)
 
-        self.btnCancel = ct.CTkButton(self, text="Отмена", command=self.destroy)
+        self.btnCancel = ct.CTkButton(frame, text="Отмена", command=self.destroy)
         self.btnCancel.grid(row=1, column=1, sticky="e", **grid_params)
 
         self.bind_all("<Alt-KeyPress-b>", lambda evt: self.entitem.focus_set())
