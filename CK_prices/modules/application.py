@@ -558,7 +558,7 @@ class Application(tkinter.Tk):
                 except:
                     item = "Информации нет"
                 try:
-                    price_block = soup.find("div", class_="lo2")
+                    price_block = soup.find(attrs={"data-widget": "webSale"})
                     price_text = price_block.get_text().strip()
                     price_text = price_text.split("₸")[0]
                     price = int("".join(filter(str.isdigit, price_text)))
@@ -770,7 +770,7 @@ class Products(tkinter.Toplevel):
         )
         btnSearch.grid(row=0, column=1, pady=5, padx=(1, 15))
 
-        self.add_button = ct.CTkButton(frm, text="Добавить", command=self.add_record)
+        self.add_button = ct.CTkButton(frm, text="Добавить", command=self.add_link)
         self.add_button.grid(row=0, column=4, padx=20, pady=5)
 
         frm.grid_columnconfigure(0, weight=1)

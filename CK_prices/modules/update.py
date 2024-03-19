@@ -161,7 +161,7 @@ def update():
             except:
                 item = "Информации нет"
             try:
-                price_block = soup.find("div", class_="lo2")
+                price_block = soup.find(attrs={"data-widget": "webSale"})
                 price_text = price_block.get_text().strip()
                 price_text = price_text.split("₸")[0]
                 price = int("".join(filter(str.isdigit, price_text)))

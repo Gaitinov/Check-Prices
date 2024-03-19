@@ -1,5 +1,4 @@
 import ctypes
-import logging
 import subprocess
 import os
 import getpass
@@ -13,7 +12,6 @@ def is_already_running(exe_name):
     call_result = subprocess.check_output(
         f'tasklist /fi "IMAGENAME eq {exe_name}"', shell=True
     ).decode("cp866")
-    logging.info(call_result.splitlines())
 
     for line in call_result.splitlines():
         if exe_name in line and str(current_pid) not in line:
