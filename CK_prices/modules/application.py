@@ -769,6 +769,10 @@ class Products(tkinter.Toplevel):
             frm, image=self.search_image, command=self.load_data
         )
         btnSearch.grid(row=0, column=1, pady=5, padx=(1, 15))
+
+        self.add_button = ct.CTkButton(frm, text="Добавить", command=self.add_record)
+        self.add_button.grid(row=0, column=4, padx=20, pady=5)
+
         frm.grid_columnconfigure(0, weight=1)
         frm.grid(row=0, column=0, columnspan=2, sticky="we")
 
@@ -778,9 +782,9 @@ class Products(tkinter.Toplevel):
             displaycolumns="#all",
             show="headings",
         )
-        self.trwPB.column("item", minwidth=100)
-        self.trwPB.column("time", minwidth=100)
-        self.trwPB.column("link", minwidth=100)
+        self.trwPB.column("item", minwidth=150)
+        self.trwPB.column("time", minwidth=150)
+        self.trwPB.column("link", minwidth=150)
 
         self.trwPB.heading("item", text="Товар")
         self.trwPB.heading("time", text="Время")

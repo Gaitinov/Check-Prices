@@ -71,7 +71,7 @@ class Settings(tkinter.Toplevel):
 
         self.label_min_reviews_count = ct.CTkLabel(
             frame,
-            text="Введите минимальное количество отзывов у магазина kaspi при проверке цен:",
+            text="Введите минимальное количество отзывов у магазина Kaspi при проверке цен:",
             anchor="w",
         )
         self.label_min_reviews_count.pack(pady=10, padx=10, fill="x")
@@ -125,18 +125,18 @@ class Settings(tkinter.Toplevel):
                 "DEFAULT", "PRICE_RANGE_FOR_SAVE_TO_DB", str(price_range_save)
             )  # Сохранение как строки
         except ValueError as e:
-            tkinter.messagebox.showerror("Ошибка", str(e))
+            tkinter.messagebox.showerror("Ошибка диапазона цен для сохранения", str(e))
             return
 
         try:
             value_int = int(value)
             if value_int <= 59 or value_int > 100000:
                 raise ValueError(
-                    "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000"
+                     "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000"
                 )
             config.set("DEFAULT", "CHECK_PRICE_INTERVAL", value)
         except ValueError as e:
-            tkinter.messagebox.showerror("Ошибка", str(e))
+            tkinter.messagebox.showerror("Ошибка интервала проверки цен в фоне", str(e))
             return
 
         try:
@@ -149,7 +149,7 @@ class Settings(tkinter.Toplevel):
                 "DEFAULT", "PRICE_RANGE_NOTIFICATION", str(price_range_notification)
             )
         except ValueError as e:
-            tkinter.messagebox.showerror("Ошибка", str(e))
+            tkinter.messagebox.showerror("Ошибка диапазона цен для уведомлений", str(e))
             return
 
         try:
@@ -158,7 +158,7 @@ class Settings(tkinter.Toplevel):
                 raise ValueError("Введите корректное количество отзывов")
             config.set("DEFAULT", "MIN_REVIEWS_COUNT", str(min_reviews_count))
         except ValueError as e:
-            tkinter.messagebox.showerror("Ошибка", str(e))
+            tkinter.messagebox.showerror("Ошибка в количестве отзывов", str(e))
             return
 
         with open("settings.ini", "w") as configfile:
