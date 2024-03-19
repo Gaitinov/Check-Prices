@@ -2,7 +2,8 @@ import logging
 import time
 from playwright.sync_api import sync_playwright
 
-def setup_driver(url, max_attempts=3):
+
+def setup_driver_kaspi(url, max_attempts=3):
     attempt = 0
     while attempt < max_attempts:
         try:

@@ -3,7 +3,7 @@ import logging
 import configparser
 from bs4 import BeautifulSoup as BS
 from datetime import datetime
-from modules.driver import setup_driver
+from modules.kaspidriver import setup_driver_kaspi
 from modules.ozondriver import setup_driver_ozon
 import sqlite3
 import os
@@ -13,10 +13,10 @@ from winotify import Notification
 config = configparser.ConfigParser()
 config.read("settings.ini")
 
-interval = config.getint("DEFAULT", "price_range_notification")
-price_range_notification = interval
-interval = config.getint("DEFAULT", "price_range_for_save_to_db")
-price_range_for_save_to_db = interval
+price_range_notification = config.getint("DEFAULT", "price_range_notification")
+check_price_interval = config.getint("DEFAULT", "check_price_interval")
+price_range_for_save_to_db = config.getint("DEFAULT", "price_range_for_save_to_db")
+min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 
 
 def notifyex():
@@ -99,7 +99,7 @@ def update():
 
         elif "kaspi" in link[i]:
             try:
-                html = setup_driver(link[i])
+                html = setup_driver_kaspi(link[i])
                 if html is None:
                     logging.error(
                         "Не удалось получить данные с kaspi, переход к следующей записи"
@@ -114,10 +114,27 @@ def update():
             except:
                 item = "Информации нет"
             try:
-                price_text = soup.find("div", class_="item__price-once").text.strip()
-                price = int("".join(filter(str.isdigit, price_text)))
-            except:
-                price = 0
+                sellers_rows = soup.find_all("tr")
+                for seller_row in sellers_rows:
+                    reviews_link = seller_row.find("a", class_="rating-count")
+                    if reviews_link:
+                        reviews_text = reviews_link.text.strip()
+                        reviews_count = int("".join(filter(str.isdigit, reviews_text)))
+
+                        if reviews_count >= min_reviews_count:
+                            price_text = seller_row.find(
+                                "div", class_="sellers-table__price-cell-text"
+                            ).text.strip()
+                            price = int("".join(filter(str.isdigit, price_text)))
+                            break
+                else:
+                    logging.warning(
+                        f"Не найдено предложений с количеством отзывов больше {min_reviews_count}"
+                    )
+                    continue
+            except Exception as e:
+                logging.error(f"Произошла ошибка при поиске цены: {e}")
+                price = None
                 item = "Товара нет в наличии"
             try:
                 description = soup.find("div", class_="item__description-text")

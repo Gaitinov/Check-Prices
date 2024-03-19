@@ -7,7 +7,7 @@ import sqlite3
 import requests
 from bs4 import BeautifulSoup as BS
 from datetime import datetime
-from modules.driver import setup_driver
+from modules.kaspidriver import setup_driver_kaspi
 from modules.ozondriver import setup_driver_ozon
 
 
@@ -255,7 +255,7 @@ class Recordtop(ct.CTkToplevel):
                     information = "Товара нет в наличии"
 
             elif "kaspi" in self.link.get():
-                html = setup_driver(self.link.get())
+                html = setup_driver_kaspi(self.link.get())
 
                 soup = BS(html, "html.parser")
 
@@ -450,7 +450,7 @@ class Recordlink(ct.CTkToplevel):
                 information = "Товара нет в наличии"
 
         elif "kaspi" in self.link.get():
-            html = setup_driver(self.link.get())
+            html = setup_driver_kaspi(self.link.get())
 
             soup = BS(html, "html.parser")
             try:

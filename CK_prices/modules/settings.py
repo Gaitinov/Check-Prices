@@ -16,40 +16,53 @@ class Settings(tkinter.Toplevel):
     def init_ui(self):
         self.title("Настройки")
         self.geometry(
-            f"800x600+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 600 // 2}"
+            f"800x450+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 450 // 2}"
         )
         self.configure(bg="#f0f0f0")
 
-        # Использование корректного аргумента для задания шрифта
-        self.label = ct.CTkLabel(
-            self,
-            text="Введите новое значение интервала проверки цен (в секундах) в трее:",
-        )
-        self.label.pack(pady=10)
+        frame = ct.CTkFrame(self, corner_radius=10)
+        frame.pack(padx=20, pady=20, fill="both", expand=True)
 
-        self.entry = ct.CTkEntry(self, width=200, corner_radius=10)
-        self.entry.pack(pady=5)
+        self.label = ct.CTkLabel(
+            frame,
+            text="Введите новое значение интервала проверки цен (в секундах):",
+            anchor="w",
+        )
+        self.label.pack(pady=10, padx=10, fill="x")
+
+        self.entry = ct.CTkEntry(frame, width=400, corner_radius=5)
+        self.entry.pack(pady=5, padx=10, fill="x")
 
         self.label_price_range = ct.CTkLabel(
-            self, text="Введите диапазон цен для уведомлений:"
+            frame, text="Введите диапазон цен для уведомлений:", anchor="w"
         )
-        self.label_price_range.pack(pady=10)
+        self.label_price_range.pack(pady=10, padx=10, fill="x")
 
         self.entry_price_range_notification = ct.CTkEntry(
-            self, width=200, corner_radius=10
+            frame, width=400, corner_radius=5
         )
-        self.entry_price_range_notification.pack(pady=5)
+        self.entry_price_range_notification.pack(pady=5, padx=10, fill="x")
 
         self.label_price_range_save_db = ct.CTkLabel(
-            self, text="Введите диапазон цен для сохранения в базу данных:"
+            frame, text="Введите диапазон цен для сохранения в базу данных:", anchor="w"
         )
-        self.label_price_range_save_db.pack(pady=10)
+        self.label_price_range_save_db.pack(pady=10, padx=10, fill="x")
 
-        self.entry_price_range_save_db = ct.CTkEntry(self, width=200, corner_radius=10)
-        self.entry_price_range_save_db.pack(pady=5)
+        self.entry_price_range_save_db = ct.CTkEntry(frame, width=400, corner_radius=5)
+        self.entry_price_range_save_db.pack(pady=5, padx=10, fill="x")
 
-        self.button = ct.CTkButton(self, text="Сохранить", command=self.save_value)
-        self.button.pack(pady=10)
+        self.label_min_reviews_count = ct.CTkLabel(
+            frame,
+            text="Введите минимальное количество отзывов для сохранения в базу данных:",
+            anchor="w",
+        )
+        self.label_min_reviews_count.pack(pady=10, padx=10, fill="x")
+
+        self.entry_min_reviews_count = ct.CTkEntry(frame, width=400, corner_radius=5)
+        self.entry_min_reviews_count.pack(pady=5, padx=10, fill="x")
+
+        self.button = ct.CTkButton(frame, text="Сохранить", command=self.save_value)
+        self.button.pack(pady=10, padx=10)
 
         self.grab_set()
 
@@ -66,6 +79,10 @@ class Settings(tkinter.Toplevel):
         current_price_range_save_db = config.get(
             "DEFAULT", "PRICE_RANGE_FOR_SAVE_TO_DB", fallback="Введите значение"
         )
+        current_min_reviews_count = config.get(
+            "DEFAULT", "MIN_REVIEWS_COUNT", fallback="Введите значение"
+        )
+        self.entry_min_reviews_count.insert(0, current_min_reviews_count)
         self.entry_price_range_notification.insert(0, current_price_range_notification)
         self.entry_price_range_save_db.insert(0, current_price_range_save_db)
         self.entry.insert(0, current_value)
@@ -108,6 +125,15 @@ class Settings(tkinter.Toplevel):
             config.set(
                 "DEFAULT", "PRICE_RANGE_NOTIFICATION", str(price_range_notification)
             )
+        except ValueError as e:
+            tkinter.messagebox.showerror("Ошибка", str(e))
+            return
+
+        try:
+            min_reviews_count = int(self.entry_min_reviews_count.get())
+            if min_reviews_count < 0:
+                raise ValueError("Введите корректное количество отзывов")
+            config.set("DEFAULT", "MIN_REVIEWS_COUNT", str(min_reviews_count))
         except ValueError as e:
             tkinter.messagebox.showerror("Ошибка", str(e))
             return
