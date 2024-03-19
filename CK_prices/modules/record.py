@@ -1,3 +1,4 @@
+import ctypes
 import os
 import sys
 import customtkinter as ct
@@ -21,6 +22,23 @@ class Record(ct.CTkToplevel):
         self.transient(parent)
         self.focus_set()
         self.grab_set()
+
+    def is_ru_lang_keyboard(self):
+        user32 = ctypes.windll.LoadLibrary("user32.dll")
+        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
+
+    def keys(self, event):
+        if self.is_ru_lang_keyboard():
+            if event.keycode == 86:  # 'V' in Russian layout
+                event.widget.event_generate("<<Paste>>")
+            elif event.keycode == 67:  # 'C' in Russian layout
+                event.widget.event_generate("<<Copy>>")
+            elif event.keycode == 88:  # 'X' in Russian layout
+                event.widget.event_generate("<<Cut>>")
+            elif event.keycode == 65535:  # Delete key
+                event.widget.event_generate("<<Clear>>")
+            elif event.keycode == 65:  # 'A' in Russian layout
+                event.widget.event_generate("<<SelectAll>>")
 
     def create_widgets(self, record):
         grid_params = {"padx": 10, "pady": 6}
@@ -75,7 +93,9 @@ class Record(ct.CTkToplevel):
         self.information = ct.StringVar(value=record.get("information", ""))
         lblinformation = ct.CTkLabel(frame, text="Информация")
         lblinformation.grid(row=5, column=0, **grid_params)
-        self.entinformation = ct.CTkEntry(frame, textvariable=self.information, width=400)
+        self.entinformation = ct.CTkEntry(
+            frame, textvariable=self.information, width=400
+        )
         self.entinformation.grid(row=5, column=1, sticky="we", **grid_params)
 
         self.btnOK = ct.CTkButton(frame, text="ОК", command=self.save_record)
@@ -85,6 +105,13 @@ class Record(ct.CTkToplevel):
 
         self.bind_all("<KeyPress-Return>", lambda evt: self.btnOK.invoke())
         self.bind_all("<KeyPress-Escape>", lambda evt: self.btnCancel.invoke())
+
+        self.entid_item.bind("<Control-KeyPress>", self.keys)
+        self.entitem.bind("<Control-KeyPress>", self.keys)
+        self.entprice.bind("<Control-KeyPress>", self.keys)
+        self.enttime.bind("<Control-KeyPress>", self.keys)
+        self.entlink.bind("<Control-KeyPress>", self.keys)
+        self.entinformation.bind("<Control-KeyPress>", self.keys)
 
         self.bind("<Map>", self.place)
 
@@ -154,6 +181,23 @@ class Recordtop(ct.CTkToplevel):
         self.focus_set()
         self.grab_set()
 
+    def is_ru_lang_keyboard(self):
+        user32 = ctypes.windll.LoadLibrary("user32.dll")
+        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
+
+    def keys(self, event):
+        if self.is_ru_lang_keyboard():
+            if event.keycode == 86:  # 'V' in Russian layout
+                event.widget.event_generate("<<Paste>>")
+            elif event.keycode == 67:  # 'C' in Russian layout
+                event.widget.event_generate("<<Copy>>")
+            elif event.keycode == 88:  # 'X' in Russian layout
+                event.widget.event_generate("<<Cut>>")
+            elif event.keycode == 65535:  # Delete key
+                event.widget.event_generate("<<Clear>>")
+            elif event.keycode == 65:  # 'A' in Russian layout
+                event.widget.event_generate("<<SelectAll>>")
+
     def create_widgets(self, record):
         grid_params = {"padx": 10, "pady": 6}
 
@@ -196,6 +240,10 @@ class Recordtop(ct.CTkToplevel):
         self.bind_all("<Alt-KeyPress-y>", lambda evt: self.enttime.focus_set())
         self.bind_all("<KeyPress-Return>", lambda evt: self.btnOK.invoke())
         self.bind_all("<KeyPress-Escape>", lambda evt: self.btnCancel.invoke())
+
+        self.entitem.bind("<Control-KeyPress>", self.keys)
+        self.enttime.bind("<Control-KeyPress>", self.keys)
+        self.entlink.bind("<Control-KeyPress>", self.keys)
 
         self.bind("<Map>", self.place)
 
@@ -372,6 +420,23 @@ class Recordlink(ct.CTkToplevel):
         self.focus_set()
         self.grab_set()
 
+    def is_ru_lang_keyboard(self):
+        user32 = ctypes.windll.LoadLibrary("user32.dll")
+        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
+
+    def keys(self, event):
+        if self.is_ru_lang_keyboard():
+            if event.keycode == 86:  # 'V' in Russian layout
+                event.widget.event_generate("<<Paste>>")
+            elif event.keycode == 67:  # 'C' in Russian layout
+                event.widget.event_generate("<<Copy>>")
+            elif event.keycode == 88:  # 'X' in Russian layout
+                event.widget.event_generate("<<Cut>>")
+            elif event.keycode == 65535:  # Delete key
+                event.widget.event_generate("<<Clear>>")
+            elif event.keycode == 65:  # 'A' in Russian layout
+                event.widget.event_generate("<<SelectAll>>")
+
     def create_widgets(self):
         grid_params = {"padx": 10, "pady": 6}
 
@@ -396,6 +461,8 @@ class Recordlink(ct.CTkToplevel):
         self.bind_all("<Alt-KeyPress-y>", lambda evt: self.enttime.focus_set())
         self.bind_all("<KeyPress-Return>", lambda evt: self.btnOK.invoke())
         self.bind_all("<KeyPress-Escape>", lambda evt: self.btnCancel.invoke())
+
+        self.entlink.bind("<Control-KeyPress>", self.keys)
 
         self.bind("<Map>", self.place)
 

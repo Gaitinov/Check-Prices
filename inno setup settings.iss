@@ -2,10 +2,9 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Check Prices"
-#define MyAppVersion "1"
+#define MyAppVersion "1.0"
 #define MyAppPublisher "Mukharam"
-#define MyAppURL "https://t.me/Sh0rek"
-#define MyAppExeName "Check prices.exe"
+#define MyAppExeName "CheckPrices.exe"
 #define MyAppAssocName MyAppName + " File"
 #define MyAppAssocExt ".myp"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
@@ -13,25 +12,22 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{66B4C12F-2A95-420D-8669-358A568B96D2}
+AppId={{F218A1E2-15BC-4EEF-981B-600B17442CE0}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-AppPublisherURL={#MyAppURL}
-AppSupportURL={#MyAppURL}
-AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 ChangesAssociations=yes
 DisableProgramGroupPage=yes
-; Uncomment the following line to run in non administrative install mode (install for current user only.)
-;PrivilegesRequired=lowest
-OutputBaseFilename=mysetup
+; Remove the following line to run in administrative install mode (install for all users.)
+PrivilegesRequired=lowest
+OutputDir=C:\Users\Shorek\Desktop
+OutputBaseFilename=Check Prices
 SetupIconFile=C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\images\icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-PrivilegesRequired=admin
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -45,8 +41,6 @@ Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\{#MyA
 Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\_internal\*"; DestDir: "{app}\_internal"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\images\*"; DestDir: "{app}\images"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\settings.ini"; DestDir: "{app}"; Flags: ignoreversion
-
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue

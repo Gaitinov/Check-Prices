@@ -1,4 +1,5 @@
 import tkinter
+import ctypes
 import tkinter.ttk
 import tkinter.messagebox
 import customtkinter as ct
@@ -12,6 +13,23 @@ class Settings(tkinter.Toplevel):
         super().__init__(*args, **kwargs)
         self.init_ui()
         self.load_current_value()
+
+    def is_ru_lang_keyboard(self):
+        user32 = ctypes.windll.LoadLibrary("user32.dll")
+        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
+
+    def keys(self, event):
+        if self.is_ru_lang_keyboard():
+            if event.keycode == 86:  # 'V' in Russian layout
+                event.widget.event_generate("<<Paste>>")
+            elif event.keycode == 67:  # 'C' in Russian layout
+                event.widget.event_generate("<<Copy>>")
+            elif event.keycode == 88:  # 'X' in Russian layout
+                event.widget.event_generate("<<Cut>>")
+            elif event.keycode == 65535:  # Delete key
+                event.widget.event_generate("<<Clear>>")
+            elif event.keycode == 65:  # 'A' in Russian layout
+                event.widget.event_generate("<<SelectAll>>")
 
     def init_ui(self):
         self.title("Настройки")
@@ -63,6 +81,11 @@ class Settings(tkinter.Toplevel):
 
         self.button = ct.CTkButton(frame, text="Сохранить", command=self.save_value)
         self.button.pack(pady=10, padx=10)
+
+        self.entry.bind("<Control-KeyPress>", self.keys)
+        self.entry_price_range_notification.bind("<Control-KeyPress>", self.keys)
+        self.entry_price_range_save_db.bind("<Control-KeyPress>", self.keys)
+        self.entry_min_reviews_count.bind("<Control-KeyPress>", self.keys)
 
         self.grab_set()
 

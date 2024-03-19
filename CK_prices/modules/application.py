@@ -1,3 +1,4 @@
+import ctypes
 import tkinter
 import tkinter.ttk
 import logging
@@ -37,6 +38,23 @@ class Application(tkinter.Tk):
     app_title = "Учёт цен"
     schprocess = None
     stop_event = None
+
+    def is_ru_lang_keyboard(self):
+        user32 = ctypes.windll.LoadLibrary("user32.dll")
+        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
+
+    def keys(self, event):
+        if self.is_ru_lang_keyboard():
+            if event.keycode == 86:  # 'V' in Russian layout
+                event.widget.event_generate("<<Paste>>")
+            elif event.keycode == 67:  # 'C' in Russian layout
+                event.widget.event_generate("<<Copy>>")
+            elif event.keycode == 88:  # 'X' in Russian layout
+                event.widget.event_generate("<<Cut>>")
+            elif event.keycode == 65535:  # Delete key
+                event.widget.event_generate("<<Clear>>")
+            elif event.keycode == 65:  # 'A' in Russian layout
+                event.widget.event_generate("<<SelectAll>>")
 
     def __init__(self):
         super().__init__()
@@ -157,8 +175,6 @@ class Application(tkinter.Tk):
         mainmenu = tkinter.Menu(self)
         self["menu"] = mainmenu
 
-        filemenu = tkinter.Menu(mainmenu, tearoff=False)
-
         self.editmenu = tkinter.Menu(mainmenu, tearoff=False)
         self.editmenu.add_command(
             label="Добавить",
@@ -250,6 +266,8 @@ class Application(tkinter.Tk):
         self.bind("<Destroy>", self.cleanup)
 
         self.trwPB.bind("<Double-1>", self.on_double_click)
+
+        entSearch.bind("<Control-KeyPress>", self.keys)
 
         self.update_button = ct.CTkButton(
             frm, text="Проверить данные", command=self.update
@@ -626,6 +644,23 @@ class Application(tkinter.Tk):
 class Products(tkinter.Toplevel):
     app_title = "Учёт цен"
 
+    def is_ru_lang_keyboard(self):
+        user32 = ctypes.windll.LoadLibrary("user32.dll")
+        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
+
+    def keys(self, event):
+        if self.is_ru_lang_keyboard():
+            if event.keycode == 86:  # 'V' in Russian layout
+                event.widget.event_generate("<<Paste>>")
+            elif event.keycode == 67:  # 'C' in Russian layout
+                event.widget.event_generate("<<Copy>>")
+            elif event.keycode == 88:  # 'X' in Russian layout
+                event.widget.event_generate("<<Cut>>")
+            elif event.keycode == 65535:  # Delete key
+                event.widget.event_generate("<<Clear>>")
+            elif event.keycode == 65:  # 'A' in Russian layout
+                event.widget.event_generate("<<SelectAll>>")
+
     def __init__(self, parent=None):
         super().__init__()
         self.parent = parent
@@ -772,6 +807,8 @@ class Products(tkinter.Toplevel):
         self.bind("<Destroy>", self.cleanup)
 
         self.trwPB.bind("<Double-1>", self.on_double_click)
+
+        entSearch.bind("<Control-KeyPress>", self.keys)
 
         context_menu = tkinter.Menu(self, tearoff=0)
         context_menu.add_command(label="Добавить", command=self.add_record)
