@@ -22,7 +22,7 @@ from modules.record import Recordtop
 from modules.record import Recordlink
 from modules.kaspidriver import setup_driver_kaspi
 from modules.ozondriver import setup_driver_ozon
-from modules.update import update
+from modules.update import update_tray
 from modules.settings import Settings
 
 
@@ -122,11 +122,11 @@ class Application(tkinter.Tk):
                     break
 
                 if threadupdate is None or not threadupdate.is_alive():
-                    threadupdate = threading.Thread(target=update)
+                    threadupdate = threading.Thread(target=update_tray)
                     threadupdate.daemon = True
                     threadupdate.start()
 
-            logging.info("Логирование началось (поток)")  # Запись по умолчанию
+            logging.info("Логирование началось (поток)")
         except Exception as e:
             logging.error("Произошла ошибка: %s", e)
 

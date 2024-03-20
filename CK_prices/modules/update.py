@@ -29,7 +29,7 @@ def notifyex():
         print(f"Произошла ошибка: {e}")
 
 
-def update():
+def update_tray():
     # Настройка логирования
     logging.basicConfig(
         filename="app.log",

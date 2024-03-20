@@ -11,6 +11,7 @@ import sys
 class Settings(tkinter.Toplevel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.enable_price_check_var = ct.StringVar(value="off")
         self.init_ui()
         self.load_current_value()
 
@@ -34,7 +35,7 @@ class Settings(tkinter.Toplevel):
     def init_ui(self):
         self.title("Настройки")
         self.geometry(
-            f"800x450+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 450 // 2}"
+            f"800x480+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 480 // 2}"
         )
         self.configure(bg="#f0f0f0")
 
@@ -79,6 +80,16 @@ class Settings(tkinter.Toplevel):
         self.entry_min_reviews_count = ct.CTkEntry(frame, width=400, corner_radius=5)
         self.entry_min_reviews_count.pack(pady=5, padx=10, fill="x")
 
+        self.checkbutton_enable_price_check_at_start = ct.CTkCheckBox(
+            frame,
+            text="Включить проверку цен при запуске программы",
+            variable=self.enable_price_check_var,
+            onvalue="on",
+            offvalue="off",
+        )
+
+        self.checkbutton_enable_price_check_at_start.pack(pady=10, padx=10, fill="x")
+
         self.button = ct.CTkButton(frame, text="Сохранить", command=self.save_value)
         self.button.pack(pady=10, padx=10)
 
@@ -105,10 +116,18 @@ class Settings(tkinter.Toplevel):
         current_min_reviews_count = config.get(
             "DEFAULT", "MIN_REVIEWS_COUNT", fallback="Введите значение"
         )
+        # Assuming other setting load logic is correct...
+        enable_price_check_at_start = config.get(
+            "DEFAULT", "enable_price_check_at_start", fallback="off"
+        )
+
         self.entry_min_reviews_count.insert(0, current_min_reviews_count)
         self.entry_price_range_notification.insert(0, current_price_range_notification)
         self.entry_price_range_save_db.insert(0, current_price_range_save_db)
         self.entry.insert(0, current_value)
+        self.enable_price_check_var.set(
+            "on" if enable_price_check_at_start == "1" else "off"
+        )
 
     def save_value(self):
         value = self.entry.get()
@@ -159,6 +178,21 @@ class Settings(tkinter.Toplevel):
             config.set("DEFAULT", "MIN_REVIEWS_COUNT", str(min_reviews_count))
         except ValueError as e:
             tkinter.messagebox.showerror("Ошибка в количестве отзывов", str(e))
+            return
+
+        try:
+            enable_price_check_at_start_value = (
+                "1" if self.enable_price_check_var.get() == "on" else "0"
+            )
+            config.set(
+                "DEFAULT",
+                "enable_price_check_at_start",
+                enable_price_check_at_start_value,
+            )
+        except ValueError as e:
+            tkinter.messagebox.showerror(
+                "Ошибка включения проверки цен при запуске программы", str(e)
+            )
             return
 
         with open("settings.ini", "w") as configfile:

@@ -1,10 +1,19 @@
+import configparser
 import ctypes
 import subprocess
 import os
 import getpass
+import threading
+
 from modules.application import Application
+from modules.update import update_tray
 
 USER_NAME = getpass.getuser()
+
+config = configparser.ConfigParser()
+config.read("settings.ini")
+
+enable_price_check_at_start = config.getboolean("DEFAULT", "enable_price_check_at_start")
 
 def is_already_running(exe_name):
     current_pid = os.getpid()
@@ -42,4 +51,8 @@ def add_to_startup():
 add_to_startup()
 
 if not is_already_running("CheckPrices.exe"):
+    if enable_price_check_at_start:
+        threadupdate = threading.Thread(target=update_tray)
+        threadupdate.daemon = True
+        threadupdate.start()
     app = Application()
