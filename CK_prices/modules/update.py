@@ -1,10 +1,7 @@
-import requests
 import logging
 import configparser
-from bs4 import BeautifulSoup as BS
 from datetime import datetime
-from modules.kaspidriver import setup_driver_kaspi
-from modules.ozondriver import setup_driver_ozon
+from modules.product_info_extractor import extract_product_info
 import sqlite3
 import os
 import sys
@@ -59,120 +56,26 @@ def update_tray():
 
     for i in range(link_count):
         if "flip" in link[i]:
-            r = requests.get(link[i])
-            html = BS(r.content, "html.parser")
-            item = html.find("h1").text
-            try:
-                information = html.find("span", itemprop="description").text
-            except:
-                information = "Информации нет"
-            try:
-                meta_tag = html.find("meta", {"itemprop": "price"})
-                price = int(meta_tag["content"])
-            except:
-                try:
-                    price = html.find("span", class_="text_att").text
-                    price = price.replace("₸", "")  # remove space and "₸" symbol
-                    price = int(price)
-                except:
-                    price = 0
-                    information = "Товара нет в наличии"
+            item, information, price = extract_product_info(link[i])
 
         elif "technodom" in link[i]:
-            try:
-                r = requests.get(link[i])
-                html = BS(r.content, "html.parser")
-                item = html.find("h1").text
-                information = (
-                    "Для дополнительной информации перейдите на страницу товара"
-                )
-                try:
-                    price = html.find("p", class_="Typography__Heading_H1").text
-                    price = price.replace("₸", "")
-                    price = int(price)
-                except:
-                    price = 0
-                    information = "Товара нет в наличии"
-            except:
-                item = "Снят с продажи"
-                price = 0
+            item, information, price = extract_product_info(link[i])
 
         elif "kaspi" in link[i]:
-            try:
-                html = setup_driver_kaspi(link[i])
-                if html is None:
-                    logging.error(
-                        "Не удалось получить данные с kaspi, переход к следующей записи"
-                    )
-                    continue
-                soup = BS(html, "html.parser")
-            except Exception as e:
-                logging.error(f"Произошла ошибка: {e}")
-
-            try:
-                item = soup.find("h1", class_="item__heading").text.strip()
-            except:
-                item = "Информации нет"
-            try:
-                sellers_rows = soup.find_all("tr")
-                for seller_row in sellers_rows:
-                    reviews_link = seller_row.find("a", class_="rating-count")
-                    if reviews_link:
-                        reviews_text = reviews_link.text.strip()
-                        reviews_count = int("".join(filter(str.isdigit, reviews_text)))
-
-                        if reviews_count >= min_reviews_count:
-                            price_text = seller_row.find(
-                                "div", class_="sellers-table__price-cell-text"
-                            ).text.strip()
-                            price = int("".join(filter(str.isdigit, price_text)))
-                            break
-                else:
-                    logging.warning(
-                        f"Не найдено предложений с количеством отзывов больше {min_reviews_count}"
-                    )
-                    continue
-            except Exception as e:
-                logging.error(f"Произошла ошибка при поиске цены: {e}")
-                price = None
-                item = "Товара нет в наличии"
-            try:
-                description = soup.find("div", class_="item__description-text")
-                description_items = description.find_all("li")
-                information = " / ".join(
-                    item.get_text().strip() for item in description_items
+            result = extract_product_info(link[i])
+            if result is None:
+                continue
+            if result[0] == "skip":
+                logging.warning(
+                    f"Не удалось получить данные с kaspi, переход к следующей записи"
                 )
-            except:
-                information = "Информации нет"
+                continue
+            item, information, price = result
+
         elif "ozon" in link[i]:
-            try:
-                html = setup_driver_ozon(link[i])
-                if html is None:
-                    logging.error(
-                        "Не удалось получить данные с ozon, переход к следующей записи"
-                    )
-                    continue
-                soup = BS(html, "html.parser")
-            except Exception as e:
-                logging.error(f"Произошла ошибка: {e}")
-            try:
-                item = soup.find(attrs={"data-widget": "webProductHeading"})
-                item = item.get_text().strip()
-            except:
-                item = "Информации нет"
-            try:
-                price_block = soup.find(attrs={"data-widget": "webSale"})
-                price_text = price_block.get_text().strip()
-                price_text = price_text.split("₸")[0]
-                price = int("".join(filter(str.isdigit, price_text)))
-            except:
-                price = 0
-                item = "Товара нет в наличии"
-            try:
-                description_block = soup.select_one('div[data-widget="webDescription"]')
-                information = description_block.get_text().strip()
-            except:
-                information = "Информации нет"
+            result = extract_product_info(link[i])
+            if result is None:
+                continue
         else:
             continue
 

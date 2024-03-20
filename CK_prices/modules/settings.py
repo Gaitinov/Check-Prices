@@ -97,7 +97,7 @@ class Settings(tkinter.Toplevel):
         self.entry_price_range_notification.bind("<Control-KeyPress>", self.keys)
         self.entry_price_range_save_db.bind("<Control-KeyPress>", self.keys)
         self.entry_min_reviews_count.bind("<Control-KeyPress>", self.keys)
-
+        self.resizable(False, False)
         self.grab_set()
 
     def load_current_value(self):

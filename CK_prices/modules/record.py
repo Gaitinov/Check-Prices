@@ -1,3 +1,4 @@
+import configparser
 import ctypes
 import os
 import sys
@@ -5,12 +6,14 @@ import customtkinter as ct
 import tkinter
 import threading
 import sqlite3
-import requests
-from bs4 import BeautifulSoup as BS
 from datetime import datetime
-from modules.kaspidriver import setup_driver_kaspi
-from modules.ozondriver import setup_driver_ozon
 from modules.validators import Validators
+from modules.product_info_extractor import extract_product_info
+
+config = configparser.ConfigParser()
+config.read("settings.ini")
+
+min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 
 
 class Record(ct.CTkToplevel):
@@ -312,81 +315,40 @@ class Recordtop(ct.CTkToplevel):
         db_path = os.path.join(db_dir, "tab.db")
         if not self.id_item:
             if "flip" in self.link.get():
-                r = requests.get(self.link.get())
-                html = BS(r.content, "html.parser")
-                try:
-                    information = html.find("span", itemprop="description").text
-                except:
-                    information = "Информации нет"
-                try:
-                    meta_tag = html.find("meta", {"itemprop": "price"})
-                    price = int(meta_tag["content"])
-                except:
-                    try:
-                        price = html.find("span", class_="text_att").text
-                        price = price.replace("₸", "")  # remove space and "₸" symbol
-                        price = int(price)
-                    except:
-                        price = 0
-                        information = "Товара нет в наличии"
+                item, information, price = extract_product_info(self.link.get())
 
             elif "technodom" in self.link.get():
-                r = requests.get(self.link.get())
-                html = BS(r.content, "html.parser")
-                information = (
-                    "Для дополнительной информации перейдите на страницу товара"
-                )
-                try:
-                    price = html.find("p", class_="Typography__Heading_H1").text
-                    price = price.replace("₸", "")
-                    price = int(price)
-                    print(price)
-                except:
-                    price = 0
-                    information = "Товара нет в наличии"
+                item, information, price = extract_product_info(self.link.get())
 
             elif "kaspi" in self.link.get():
-                html = setup_driver_kaspi(self.link.get())
-
-                soup = BS(html, "html.parser")
-
-                try:
-                    price_text = soup.find(
-                        "div", class_="item__price-once"
-                    ).text.strip()
-                    price = int("".join(filter(str.isdigit, price_text)))
-                except:
-                    price = 0
-                    self.item = "Товара нет в наличии"
-
-                try:
-                    description = soup.find("div", class_="item__description-text")
-                    description_items = description.find_all("li")
-                    information = " / ".join(
-                        item.get_text().strip() for item in description_items
+                result = extract_product_info(self.link.get())
+                if result is None:
+                    tkinter.messagebox.showerror(
+                        title="Ошибка загрузки данных",
+                        message="Не удалось получить данные с kaspi.",
                     )
-                except:
-                    information = "Информации нет"
+                    self.parent.after(0, self.parent.hide_activity)
+                    return
+                if result[0] == "skip":
+                    tkinter.messagebox.showerror(
+                        title="Недостаточно отзывов",
+                        message=f"Не найдено предложений с количеством отзывов больше {min_reviews_count}.",
+                    )
+                    self.parent.grab_set()
+                    self.parent.after(0, self.parent.hide_activity)
+                    return
+                item, information, price = result
 
             elif "ozon" in self.link.get():
-                html = setup_driver_ozon(self.link.get())
-
-                soup = BS(html, "html.parser")
-                try:
-                    price_block = soup.find(attrs={"data-widget": "webSale"})
-                    price_text = price_block.get_text().strip()
-                    price_text = price_text.split("₸")[0]
-                    price = int("".join(filter(str.isdigit, price_text)))
-                except:
-                    price = 0
-                    self.item = "Товара нет в наличии"
-                try:
-                    description_block = soup.select_one(
-                        'div[data-widget="webDescription"]'
+                result = extract_product_info(self.link.get())
+                if result is None:
+                    tkinter.messagebox.showerror(
+                        title="Ошибка загрузки данных",
+                        message="Не удалось получить данные с ozon.",
                     )
-                    information = description_block.get_text().strip()
-                except:
-                    information = "Информации нет"
+                    self.parent.after(0, self.parent.hide_activity)
+                    return
+                item, information, price = result
 
             else:
                 tkinter.messagebox.showerror(
@@ -536,84 +498,44 @@ class Recordlink(ct.CTkToplevel):
 
         db_path = os.path.join(db_dir, "tab.db")
         if "flip" in self.link.get():
-            r = requests.get(self.link.get())
-            html = BS(r.content, "html.parser")
-            item = html.find("h1").text
-            try:
-                information = html.find("span", itemprop="description").text
-            except:
-                information = "Информации нет"
-            try:
-                meta_tag = html.find("meta", {"itemprop": "price"})
-                price = int(meta_tag["content"])
-            except:
-                try:
-                    price = html.find("span", class_="text_att").text
-                    price = price.replace("₸", "")  # remove space and "₸" symbol
-                    price = int(price)
-                except:
-                    price = 0
-                    information = "Товара нет в наличии"
+            item, information, price = extract_product_info(self.link.get())
 
         elif "technodom" in self.link.get():
-            r = requests.get(self.link.get())
-            html = BS(r.content, "html.parser")
-            item = html.find("h1").text
-            information = "Для дополнительной информации перейдите на страницу товара"
-            try:
-                price = html.find("p", class_="Typography__Heading_H1").text
-                price = price.replace("₸", "")  # remove space and "₸" symbol
-                price = int(price)
-            except:
-                price = 0
-                information = "Товара нет в наличии"
+            item, information, price = extract_product_info(self.link.get())
 
         elif "kaspi" in self.link.get():
-            html = setup_driver_kaspi(self.link.get())
-
-            soup = BS(html, "html.parser")
-            try:
-                item = soup.find("h1", class_="item__heading").text.strip()
-            except:
-                item = "Информации нет"
-            try:
-                price_text = soup.find("div", class_="item__price-once").text.strip()
-                price = int("".join(filter(str.isdigit, price_text)))
-            except:
-                price = 0
-                item = "Товара нет в наличии"
-            try:
-                description = soup.find("div", class_="item__description-text")
-                description_items = description.find_all("li")
-                information = " / ".join(
-                    item.get_text().strip() for item in description_items
+            result = extract_product_info(self.link.get())
+            if result is None:
+                tkinter.messagebox.showerror(
+                    title="Ошибка загрузки данных",
+                    message="Не удалось получить данные с kaspi.",
                 )
-            except:
-                information = "Информации нет"
+                self.parent.after(0, self.parent.hide_activity)
+                return
+            if result[0] == "skip":
+                tkinter.messagebox.showerror(
+                    title="Недостаточно отзывов",
+                    message=f"Не найдено предложений с количеством отзывов больше {min_reviews_count}.",
+                )
+                self.parent.grab_set()
+                self.parent.after(0, self.parent.hide_activity)
+                return
+            item, information, price = result
 
         elif "ozon" in self.link.get():
-            html = setup_driver_ozon(self.link.get())
-
-            soup = BS(html, "html.parser")
-            try:
-                item = soup.find(attrs={"data-widget": "webProductHeading"})
-                item = item.get_text().strip()
-            except:
-                item = "Информации нет"
-            try:
-                price_block = soup.find(attrs={"data-widget": "webSale"})
-                price_text = price_block.get_text().strip()
-                price_text = price_text.split("₸")[0]
-                price = int("".join(filter(str.isdigit, price_text)))
-            except:
-                price = 0
-                item = "Товара нет в наличии"
-            try:
-                description_block = soup.select_one('div[data-widget="webDescription"]')
-                information = description_block.get_text().strip()
-            except:
-                information = "Информации нет"
+            result = extract_product_info(self.link.get())
+            if result is None:
+                tkinter.messagebox.showerror(
+                    title="Ошибка загрузки данных",
+                    message="Не удалось получить данные с ozon.",
+                )
+                self.parent.after(0, self.parent.hide_activity)
+                return
+            item, information, price = result
         else:
+            tkinter.messagebox.showerror(
+                "Ошибка", f"Неизвестный магазин: {self.link.get()}"
+            )
             return
 
         now = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
