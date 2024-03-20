@@ -27,7 +27,6 @@ def setup_driver_ozon(url, max_attempts=3):
                     )
                     raise Exception("Selector '#section-description' not found")
 
-                # Ensuring the targeted section is in view
                 page.eval_on_selector(
                     "#section-description", "element => element.scrollIntoView()"
                 )

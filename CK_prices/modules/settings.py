@@ -132,7 +132,7 @@ class Settings(tkinter.Toplevel):
             value_int = int(value)
             if value_int <= 59 or value_int > 100000:
                 raise ValueError(
-                     "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000"
+                    "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000"
                 )
             config.set("DEFAULT", "CHECK_PRICE_INTERVAL", value)
         except ValueError as e:

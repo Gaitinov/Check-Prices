@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup as BS
 from datetime import datetime
 from modules.kaspidriver import setup_driver_kaspi
 from modules.ozondriver import setup_driver_ozon
+from modules.validators import Validators
 
 
 class Record(ct.CTkToplevel):
@@ -129,17 +130,34 @@ class Record(ct.CTkToplevel):
 
         self.geometry(f"+{x}+{y}")
 
+    def validation(self):
+        if not Validators.validate_id(self.id_item.get()):
+            return
+        if not Validators.validate_item(self.item.get()):
+            return
+        if not Validators.validate_price(self.price.get()):
+            return
+        if not Validators.validate_time(self.time.get()):
+            return
+        if not Validators.validate_url(self.link.get()):
+            return
+        return True
+
     def save_record(self):
+
+        if not self.validation():
+            return
+
         cur = self.parent.con.cursor()
         try:
             if self.id_record:
                 cur.execute(
                     "update prices set id_item=?, item=?, price=?, time=?, link=?, information=? where id_record=?",
                     (
-                        self.id_item.get(),
+                        self.id_item.get().strip(),
                         self.item.get(),
-                        self.price.get(),
-                        self.time.get(),
+                        self.price.get().strip(),
+                        self.time.get().strip(),
                         self.link.get(),
                         self.information.get(),
                         self.id_record,
@@ -150,10 +168,10 @@ class Record(ct.CTkToplevel):
                     "insert into prices (id_item, item, price, time, link, information) "
                     + "values (?, ? ,? , ? , ?, ?)",
                     (
-                        self.id_item.get(),
+                        self.id_item.get().strip(),
                         self.item.get(),
-                        self.price.get(),
-                        self.time.get(),
+                        self.price.get().strip(),
+                        self.time.get().strip(),
                         self.link.get(),
                         self.information.get(),
                     ),
@@ -261,7 +279,20 @@ class Recordtop(ct.CTkToplevel):
 
         self.geometry(f"+{x}+{y}")
 
+    def validation(self):
+        if not Validators.validate_item(self.item.get()):
+            return
+        if not Validators.validate_url(self.link.get()):
+            return
+        if not Validators.validate_time(self.time.get()):
+            return
+        return True
+
     def save_record(self):
+
+        if not self.validation():
+            return
+
         self.parent.show_activity()
         save_thread = threading.Thread(target=self.save_record_logic)
         save_thread.start()
@@ -307,7 +338,7 @@ class Recordtop(ct.CTkToplevel):
                 )
                 try:
                     price = html.find("p", class_="Typography__Heading_H1").text
-                    price = price.replace("₸", "")  # remove space and "₸" symbol
+                    price = price.replace("₸", "")
                     price = int(price)
                     print(price)
                 except:
@@ -350,7 +381,9 @@ class Recordtop(ct.CTkToplevel):
                     price = 0
                     self.item = "Товара нет в наличии"
                 try:
-                    description_block = soup.select_one('div[data-widget="webDescription"]')
+                    description_block = soup.select_one(
+                        'div[data-widget="webDescription"]'
+                    )
                     information = description_block.get_text().strip()
                 except:
                     information = "Информации нет"
@@ -369,7 +402,7 @@ class Recordtop(ct.CTkToplevel):
                         "update items set item=?, time=?, link=? where id_item=?",
                         (
                             self.item.get(),
-                            self.time.get(),
+                            self.time.get().strip(),
                             self.link.get(),
                             self.id_item,
                         ),
@@ -377,7 +410,7 @@ class Recordtop(ct.CTkToplevel):
                 else:
                     cur.execute(
                         "insert into items (item, time, link) " + "values (?, ? ,? )",
-                        (self.item.get(), self.time.get(), self.link.get()),
+                        (self.item.get(), self.time.get().strip(), self.link.get()),
                     )
                     id_item = str(cur.lastrowid)
                     cur.execute(
@@ -387,7 +420,7 @@ class Recordtop(ct.CTkToplevel):
                             id_item,
                             self.item.get(),
                             price,
-                            self.time.get(),
+                            self.time.get().strip(),
                             self.link.get(),
                             information,
                         ),
@@ -481,6 +514,10 @@ class Recordlink(ct.CTkToplevel):
         self.geometry(f"+{x}+{y}")
 
     def save_record(self):
+
+        if not Validators.validate_url(self.link.get()):
+            return
+
         self.parent.show_activity()
         save_thread = threading.Thread(target=self.save_record_logic)
         save_thread.start()
@@ -577,9 +614,6 @@ class Recordlink(ct.CTkToplevel):
             except:
                 information = "Информации нет"
         else:
-            tkinter.messagebox.showerror(
-                "Ошибка", f"Неизвестный магазин: {self.link.get()}"
-            )
             return
 
         now = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
