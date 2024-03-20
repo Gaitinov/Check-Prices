@@ -56,17 +56,16 @@ class Application(tkinter.Tk):
             elif event.keycode == 65:  # 'A' in Russian layout
                 event.widget.event_generate("<<SelectAll>>")
 
+    def initialize_logging(self):
+        logging.basicConfig(filename="app.log", filemode="w",
+                            format="%(name)s - %(levelname)s - %(message)s",
+                            level=logging.INFO)
+        logging.info("Logging has started at the very beginning.")
+
     def __init__(self):
         super().__init__()
 
-        # Настройка логирования
-        logging.basicConfig(
-            filename="app.log",
-            filemode="w",
-            format="%(name)s - %(levelname)s - %(message)s",
-            level=logging.INFO,
-        )
-        logging.info("Логирование началось самый старт")
+        self.initialize_logging()
 
         try:
             if getattr(sys, "frozen", False):
@@ -160,7 +159,7 @@ class Application(tkinter.Tk):
                 "name",
                 image,
                 "Check price",
-                menu=pystray.Menu(item("Развернуть", action), item("Выйти", exitall)),
+                menu=pystray.Menu(item("Развернуть", action, default=True), item("Выйти", exitall)),
             )
             self.icon.run()
         except Exception as e:
@@ -566,7 +565,7 @@ class Application(tkinter.Tk):
                     price = 0
                     item = "Товара нет в наличии"
                 try:
-                    description_block = soup.find("div", class_="RA-a1")
+                    description_block = soup.select_one('div[data-widget="webDescription"]')
                     information = description_block.get_text().strip()
                 except:
                     information = "Информации нет"

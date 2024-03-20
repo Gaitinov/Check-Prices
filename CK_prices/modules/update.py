@@ -169,7 +169,7 @@ def update():
                 price = 0
                 item = "Товара нет в наличии"
             try:
-                description_block = soup.find("div", class_="RA-a1")
+                description_block = soup.select_one('div[data-widget="webDescription"]')
                 information = description_block.get_text().strip()
             except:
                 information = "Информации нет"
