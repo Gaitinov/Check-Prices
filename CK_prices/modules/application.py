@@ -311,11 +311,27 @@ class Application(tkinter.Tk):
     def load_data(self):
         self.trwPB.delete(*self.trwPB.get_children())
         cur = self.con.cursor()
-        s = self.search.get()
-        if s:
+        search_str = self.search.get()
+        if search_str:
             cur.execute(
-                "SELECT * FROM prices WHERE id_item LIKE ? ORDER BY id_record DESC;",
-                (s + "%",),
+                """
+                    SELECT * FROM prices
+                    WHERE id_item LIKE ?
+                       OR item LIKE ?
+                       OR price LIKE ?
+                       OR time LIKE ?
+                       OR link LIKE ?
+                       OR information LIKE ?
+                    ORDER BY id_record DESC;
+                    """,
+                (
+                    f"%{search_str}%",
+                    f"%{search_str}%",
+                    f"%{search_str}%",
+                    f"%{search_str}%",
+                    f"%{search_str}%",
+                    f"%{search_str}%",
+                ),
             )
         else:
             cur.execute("SELECT * FROM prices ORDER BY id_record DESC;")
@@ -854,10 +870,11 @@ class Products(tkinter.Toplevel):
     def load_data(self):
         self.trwPB.delete(*self.trwPB.get_children())
         cur = self.con.cursor()
-        s = self.search.get()
-        if s:
+        search_str = self.search.get()
+        if search_str:
             cur.execute(
-                "select * from items where item like ? order by id_item;", (s + "%",)
+                "select * from items where item like ? or time like ? or link like ?",
+                (f"%{search_str}%", f"%{search_str}%", f"%{search_str}%"),
             )
         else:
             cur.execute("select * from items order by id_item;")
