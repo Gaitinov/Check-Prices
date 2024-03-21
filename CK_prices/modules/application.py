@@ -31,7 +31,7 @@ price_range_for_save_to_db = config.getint("DEFAULT", "price_range_for_save_to_d
 min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 
 
-class Application(tkinter.Tk):
+class Application(ct.CTk):
     app_title = "Учёт цен"
     schprocess = None
     stop_event = None
@@ -178,7 +178,7 @@ class Application(tkinter.Tk):
         self.delete_image = tkinter.PhotoImage(file=r"images/delete.gif")
         self.search_image = tkinter.PhotoImage(file=r"images/search.gif")
         mainmenu = tkinter.Menu(self)
-        self["menu"] = mainmenu
+        self.config(menu=mainmenu)
 
         self.editmenu = tkinter.Menu(mainmenu, tearoff=False)
         self.editmenu.add_command(
@@ -579,7 +579,7 @@ class Application(tkinter.Tk):
         self.after(0, self.update_complete_callback)
 
 
-class Products(tkinter.Toplevel):
+class Products(ct.CTkToplevel):
     app_title = "Учёт цен"
 
     def is_ru_lang_keyboard(self):

@@ -8,7 +8,7 @@ import os
 import sys
 
 
-class Settings(tkinter.Toplevel):
+class Settings(ct.CTkToplevel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.enable_price_check_var = ct.StringVar(value="off")
