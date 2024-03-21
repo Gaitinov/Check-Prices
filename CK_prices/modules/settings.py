@@ -198,5 +198,10 @@ class Settings(tkinter.Toplevel):
         with open("settings.ini", "w") as configfile:
             config.write(configfile)
 
-        os.execv(sys.executable, ["python"] + sys.argv)
+
+        new_args = sys.argv[:]
+        if '--auto-close' in new_args:
+            new_args.append('--from-settings')
+        os.execv(sys.executable, [sys.executable] + new_args)
+
         self.destroy()

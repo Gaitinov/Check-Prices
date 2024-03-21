@@ -45,7 +45,7 @@ def add_to_startup():
 
     with open(os.path.join(bat_path, "CheckPrices.bat"), "w+") as bat_file:
         bat_file.write(f'cd /d "{base_path}"\n')
-        bat_file.write(f'start "" "{exe_path}"')
+        bat_file.write(f'start "" "{exe_path}" --auto-close')
 
 
 add_to_startup()

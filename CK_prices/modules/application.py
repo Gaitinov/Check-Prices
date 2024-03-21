@@ -62,6 +62,9 @@ class Application(tkinter.Tk):
         )
         logging.info("Logging has started at the very beginning.")
 
+    def check_auto_close(self):
+        if '--auto-close' in sys.argv and '--from-settings' not in sys.argv:
+            self.exitstray()
     def __init__(self):
         super().__init__()
 
@@ -101,6 +104,7 @@ class Application(tkinter.Tk):
             )  # Затем возвращаем обычный режим
 
             self.protocol("WM_DELETE_WINDOW", self.exitstray)
+            self.check_auto_close()
             self.mainloop()
             logging.info("Логирование началось init")  # Запись по умолчанию
         except Exception as e:
