@@ -1,6 +1,7 @@
 from urllib.parse import urlparse
 import tkinter.messagebox
 import re
+import datetime
 
 
 class Validators:
@@ -60,6 +61,15 @@ class Validators:
         ):
             tkinter.messagebox.showerror(
                 "Ошибка", "Время должно быть в формате MM/DD/YYYY HH:MM:SS."
+            )
+            return False
+
+        try:
+            # Validate time format and actual feasibility of the date/time
+            datetime.datetime.strptime(time, "%m/%d/%Y %H:%M:%S")
+        except ValueError:
+            tkinter.messagebox.showerror(
+                "Ошибка", "Время должно быть в формате MM/DD/YYYY HH:MM:SS и быть действительной датой."
             )
             return False
 

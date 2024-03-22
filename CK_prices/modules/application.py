@@ -386,7 +386,9 @@ class Application(ct.CTk):
                 f"select time from prices WHERE link = '{value}'"
             ).fetchall()
             timeall = [x[0] for x in timeall]
-
+            item_name = cur.execute(
+                f"select item from items WHERE link = '{value}'"
+            ).fetchone()[0]
             if len(prices) < 2:
                 tkinter.messagebox.showerror(
                     "Ошибка",
@@ -400,14 +402,14 @@ class Application(ct.CTk):
                     )
                 )
                 fig.update_layout(
-                    title="График изменения цен на товар",
+                    title=f"График изменения цен на товар: {item_name}",
                     xaxis_title="Время",
                     yaxis_title="Цена",
                 )
-                fig.write_html("graph.html")  # Сохраняем график в HTML-файл
+                fig.write_html("graph.html")
                 webbrowser.open(
                     "file://" + os.path.realpath("graph.html")
-                )  # Открываем HTML-файл в браузере
+                )
 
             self.con.commit()
 
