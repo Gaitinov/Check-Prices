@@ -495,8 +495,12 @@ class Application(ct.CTk):
                 if result[0] == "skip":
                     tkinter.messagebox.showerror(
                         title="Недостаточно отзывов",
-                        message=f"Не найдено предложений с количеством отзывов больше {min_reviews_count}.",
+                        message=f"Нет цены на товар {link[i]}. Пропуск.",
                         parent=self,
+                    )
+                if result[0] == "second_check":
+                    logging.warning(
+                        f"Повторная проверка цен для {link[i]}. Пропуск."
                     )
                     continue
                 item, information, price = result

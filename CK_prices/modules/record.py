@@ -331,13 +331,22 @@ class Recordtop(ct.CTkToplevel):
                     return
                 if result[0] == "skip":
                     tkinter.messagebox.showerror(
-                        title="Недостаточно отзывов",
-                        message=f"Не найдено предложений с количеством отзывов больше {min_reviews_count}.",
+                        title="Товара нет в наличии",
+                        message=f"Не найдена цена на товар.",
                     )
                     self.parent.grab_set()
                     self.parent.after(0, self.parent.hide_activity)
                     return
-                item, information, price = result
+                if result[0] == "second_check":
+                    tkinter.messagebox.showerror(
+                        title="Недостаточно отзывов",
+                        message=f"Не найдено предложений с количеством отзывов больше {min_reviews_count}. Товар добавлен с минимальной ценой.",
+                    )
+                    self.parent.grab_set()
+                    item, information, price = result[1], result[2], result[3]
+
+                if result[0] != "second_check":
+                    item, information, price = result
 
             elif "ozon" in self.link.get():
                 result = extract_product_info(self.link.get())
@@ -514,13 +523,22 @@ class Recordlink(ct.CTkToplevel):
                 return
             if result[0] == "skip":
                 tkinter.messagebox.showerror(
-                    title="Недостаточно отзывов",
-                    message=f"Не найдено предложений с количеством отзывов больше {min_reviews_count}.",
+                    title="Товара нет в наличии",
+                    message=f"Не найдена цена на товар.",
                 )
                 self.parent.grab_set()
                 self.parent.after(0, self.parent.hide_activity)
                 return
-            item, information, price = result
+            if result[0] == "second_check":
+                tkinter.messagebox.showerror(
+                    title="Недостаточно отзывов",
+                    message=f"Не найдено предложений с количеством отзывов больше {min_reviews_count}. Товар добавлен с минимальной ценой.",
+                )
+                self.parent.grab_set()
+                item, information, price = result[1], result[2], result[3]
+
+            if result[0] != "second_check":
+                item, information, price = result
 
         elif "ozon" in self.link.get():
             result = extract_product_info(self.link.get())

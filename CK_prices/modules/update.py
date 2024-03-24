@@ -67,9 +67,15 @@ def update_tray():
                 continue
             if result[0] == "skip":
                 logging.warning(
-                    f"Не удалось получить данные с kaspi, переход к следующей записи"
+                    f"Нет цены на товар {link[i]}. Пропуск."
                 )
                 continue
+            if result[0] == "second_check":
+                logging.warning(
+                    f"Повторная проверка цен для {link[i]}. Пропуск."
+                )
+                continue
+
             item, information, price = result
 
         elif "ozon" in link[i]:

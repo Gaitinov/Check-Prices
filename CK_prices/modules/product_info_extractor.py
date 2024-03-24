@@ -97,6 +97,12 @@ def extract_info_kaspi(url):
     except:
         item = "Информации нет"
     try:
+        description = soup.find("div", class_="item__description-text")
+        description_items = description.find_all("li")
+        information = " / ".join(item.get_text().strip() for item in description_items)
+    except:
+        information = "Информации нет"
+    try:
         sellers_rows = soup.find_all("tr")
         for seller_row in sellers_rows:
             reviews_link = seller_row.find("a", class_="rating-count")
@@ -111,20 +117,23 @@ def extract_info_kaspi(url):
                     price = int("".join(filter(str.isdigit, price_text)))
                     break
         else:
-            logging.warning(
-                f"Не найдено предложений с количеством отзывов больше {min_reviews_count}"
+            price_text = soup.find("div", class_="item__price-once").text.strip()
+            price = int("".join(filter(str.isdigit, price_text)))
+
+            if price is None:
+                logging.warning(
+                f"Не найдено цены у товара на Kaspi"
             )
-            return "skip", None
+                return "skip", None
+            else:
+                logging.warning(
+                    f"Нет подходящего магазина с достаточным количеством отзывов"
+                )
+                return "second_check", item, information, price
     except Exception as e:
         logging.error(f"Произошла ошибка при поиске цены: {e}")
         price = None
         item = "Товара нет в наличии"
-    try:
-        description = soup.find("div", class_="item__description-text")
-        description_items = description.find_all("li")
-        information = " / ".join(item.get_text().strip() for item in description_items)
-    except:
-        information = "Информации нет"
     return item, information, price
 
 
