@@ -66,14 +66,10 @@ def update_tray():
             if result is None:
                 continue
             if result[0] == "skip":
-                logging.warning(
-                    f"Нет цены на товар {link[i]}. Пропуск."
-                )
+                logging.warning(f"Нет цены на товар {link[i]}. Пропуск.")
                 continue
             if result[0] == "second_check":
-                logging.warning(
-                    f"Повторная проверка цен для {link[i]}. Пропуск."
-                )
+                logging.warning(f"Повторная проверка цен для {link[i]}. Пропуск.")
                 continue
 
             item, information, price = result
@@ -82,6 +78,10 @@ def update_tray():
             result = extract_product_info(link[i])
             if result is None:
                 continue
+            elif result == "webOutOfStock":
+                item, information, price = "Товара нет в наличии", "Информации нет", 0
+            else:
+                item, information, price = result
         else:
             continue
 

@@ -19,6 +19,12 @@ def setup_driver_ozon(url, max_attempts=3):
                     logging.info("Reload button is visible, clicking.")
                     page.click("button#reload-button")
 
+                page.wait_for_load_state("networkidle")
+
+                stock_status = page.is_visible('[data-widget="webOutOfStock"]')
+                if stock_status:
+                    return "webOutOfStock"
+
                 if not page.wait_for_selector(
                     "#section-description", state="attached", timeout=50000
                 ):

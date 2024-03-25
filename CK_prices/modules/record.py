@@ -357,7 +357,15 @@ class Recordtop(ct.CTkToplevel):
                     )
                     self.parent.after(0, self.parent.hide_activity)
                     return
-                item, information, price = result
+
+                elif result == "webOutOfStock":
+                    item, information, price = (
+                        "Товара нет в наличии",
+                        "Информации нет",
+                        0,
+                    )
+                else:
+                    item, information, price = result
 
             else:
                 tkinter.messagebox.showerror(
@@ -549,7 +557,10 @@ class Recordlink(ct.CTkToplevel):
                 )
                 self.parent.after(0, self.parent.hide_activity)
                 return
-            item, information, price = result
+            elif result == "webOutOfStock":
+                item, information, price = "Товара нет в наличии", "Информации нет", 0
+            else:
+                item, information, price = result
         else:
             tkinter.messagebox.showerror(
                 "Ошибка", f"Неизвестный магазин: {self.link.get()}"

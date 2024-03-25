@@ -63,8 +63,9 @@ class Application(ct.CTk):
         logging.info("Logging has started at the very beginning.")
 
     def check_auto_close(self):
-        if '--auto-close' in sys.argv and '--from-settings' not in sys.argv:
+        if "--auto-close" in sys.argv and "--from-settings" not in sys.argv:
             self.exitstray()
+
     def __init__(self):
         super().__init__()
 
@@ -407,9 +408,7 @@ class Application(ct.CTk):
                     yaxis_title="Цена",
                 )
                 fig.write_html("graph.html")
-                webbrowser.open(
-                    "file://" + os.path.realpath("graph.html")
-                )
+                webbrowser.open("file://" + os.path.realpath("graph.html"))
 
             self.con.commit()
 
@@ -499,9 +498,7 @@ class Application(ct.CTk):
                         parent=self,
                     )
                 if result[0] == "second_check":
-                    logging.warning(
-                        f"Повторная проверка цен для {link[i]}. Пропуск."
-                    )
+                    logging.warning(f"Повторная проверка цен для {link[i]}. Пропуск.")
                     continue
                 item, information, price = result
 
@@ -513,7 +510,14 @@ class Application(ct.CTk):
                         message="Не удалось получить данные с ozon.",
                     )
                     continue
-                item, information, price = result
+                elif result == "webOutOfStock":
+                    item, information, price = (
+                        "Товара нет в наличии",
+                        "Информации нет",
+                        0,
+                    )
+                else:
+                    item, information, price = result
 
             else:
                 tkinter.messagebox.showerror(

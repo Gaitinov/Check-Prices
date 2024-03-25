@@ -6,6 +6,7 @@ import customtkinter as ct
 import configparser
 import os
 import sys
+import sqlite3
 
 
 class Settings(ct.CTkToplevel):
@@ -32,10 +33,51 @@ class Settings(ct.CTkToplevel):
             elif event.keycode == 65:  # 'A' in Russian layout
                 event.widget.event_generate("<<SelectAll>>")
 
+    def reload_aplication(self):
+        new_args = sys.argv[:]
+        if "--auto-close" in new_args:
+            new_args.append("--from-settings")
+        os.execv(sys.executable, [sys.executable] + new_args)
+
+    def delete_all_data_from_db(self):
+        response = tkinter.messagebox.askyesno(
+            "Подтверждение удаления",
+            "Вы уверены, что хотите безвозвратно удалить все данные из базы данных? Это действие нельзя отменить.",
+        )
+        if response:
+            try:
+                if getattr(sys, "frozen", False):
+                    dir_path = sys._MEIPASS
+                else:
+                    dir_path = os.path.dirname(os.path.abspath(__file__))
+
+                db_dir = os.path.join(dir_path, "data")
+
+                if not os.path.exists(db_dir):
+                    os.makedirs(db_dir)
+
+                db_path = os.path.join(db_dir, "tab.db")
+
+                con = sqlite3.connect(db_path)
+                cur = con.cursor()
+                cur.execute("DELETE FROM prices")
+                cur.execute("DELETE FROM items")
+                con.commit()
+                tkinter.messagebox.showinfo(
+                    "Успех", "Все данные были успешно удалены из базы данных."
+                )
+            except Exception as e:
+                tkinter.messagebox.showerror(
+                    "Ошибка", f"Произошла ошибка при удалении данных: {e}"
+                )
+            finally:
+                con.close()
+                self.reload_aplication()
+
     def init_ui(self):
         self.title("Настройки")
         self.geometry(
-            f"800x480+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 480 // 2}"
+            f"800x530+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 530 // 2}"
         )
         self.configure(bg="#f0f0f0")
 
@@ -89,6 +131,14 @@ class Settings(ct.CTkToplevel):
         )
 
         self.checkbutton_enable_price_check_at_start.pack(pady=10, padx=10, fill="x")
+
+        self.delete_data_button = ct.CTkButton(
+            frame,
+            text="⚠ Удалить все данные из базы данных",
+            command=self.delete_all_data_from_db,
+            fg_color="red",
+        )
+        self.delete_data_button.pack(pady=10, padx=10)
 
         self.button = ct.CTkButton(frame, text="Сохранить", command=self.save_value)
         self.button.pack(pady=10, padx=10)
@@ -198,10 +248,6 @@ class Settings(ct.CTkToplevel):
         with open("settings.ini", "w") as configfile:
             config.write(configfile)
 
-
-        new_args = sys.argv[:]
-        if '--auto-close' in new_args:
-            new_args.append('--from-settings')
-        os.execv(sys.executable, [sys.executable] + new_args)
+        self.reload_aplication()
 
         self.destroy()

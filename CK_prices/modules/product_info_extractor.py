@@ -10,6 +10,7 @@ config.read("settings.ini")
 
 min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 
+
 def extract_product_info(url):
     if "flip" in url:
         return extract_info_flip(url)
@@ -121,9 +122,7 @@ def extract_info_kaspi(url):
             price = int("".join(filter(str.isdigit, price_text)))
 
             if price is None:
-                logging.warning(
-                f"Не найдено цены у товара на Kaspi"
-            )
+                logging.warning(f"Не найдено цены у товара на Kaspi")
                 return "skip", None
             else:
                 logging.warning(
@@ -140,6 +139,9 @@ def extract_info_kaspi(url):
 def extract_info_ozon(url):
     try:
         html = setup_driver_ozon(url)
+        if html == "webOutOfStock":
+            return "webOutOfStock"
+
         if html is None:
             logging.error(
                 "Не удалось получить данные с ozon, переход к следующей записи"

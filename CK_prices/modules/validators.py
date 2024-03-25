@@ -69,7 +69,8 @@ class Validators:
             datetime.datetime.strptime(time, "%m/%d/%Y %H:%M:%S")
         except ValueError:
             tkinter.messagebox.showerror(
-                "Ошибка", "Время должно быть в формате MM/DD/YYYY HH:MM:SS и быть действительной датой."
+                "Ошибка",
+                "Время должно быть в формате MM/DD/YYYY HH:MM:SS и быть действительной датой.",
             )
             return False
 
