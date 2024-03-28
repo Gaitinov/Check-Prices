@@ -40,10 +40,11 @@ class Application(ct.CTk):
         logging.basicConfig(
             filename="app.log",
             filemode="w",
-            format="%(name)s - %(levelname)s - %(message)s",
+            format="%(asctime)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
             level=logging.INFO,
         )
-        logging.info("Logging has started at the very beginning.")
+        logging.info("Logging started")
 
     def check_auto_close(self):
         if "--auto-close" in sys.argv and "--from-settings" not in sys.argv:
@@ -79,13 +80,11 @@ class Application(ct.CTk):
             self.protocol("WM_DELETE_WINDOW", self.exitstray)
             self.check_auto_close()
             self.mainloop()
-            logging.info("Логирование началось init")  # Запись по умолчанию
         except Exception as e:
             logging.error("Произошла ошибка: %s", e)
 
     def sch(self):
         try:
-            logging.info("Запущен поток")
             print("Запущен поток")
             threadupdate = None
             while not self.stop_event.is_set():
@@ -99,17 +98,16 @@ class Application(ct.CTk):
                     threadupdate = threading.Thread(target=update_tray)
                     threadupdate.daemon = True
                     threadupdate.start()
+                    logging.info("Поток запущен")
 
-            logging.info("Логирование началось (поток)")
         except Exception as e:
             logging.error("Произошла ошибка: %s", e)
 
     def exitstray(self):
-        logging.info("Логирование началось: свернуто")
+        logging.info("The application moved to the tray")
 
         def action():
             try:
-                logging.info("Поток остановлен")
                 print("Поток остановлен")
                 self.stop_event.set()
                 self.deiconify()
@@ -117,9 +115,9 @@ class Application(ct.CTk):
                 self.load_data()
                 self.lift()  # Поднимаем окно на передний план
                 self.focus_force()  # Принудительно устанавливаем фокус на окне
-                logging.info("Логирование началось разворачивание")
+                logging.info("The application is out of the tray")
             except Exception as e:
-                logging.error("Произошла ошибка: %s", e)
+                logging.error("Error: %s", e)
 
         def exitall(icon, item):
             os._exit(0)
@@ -129,7 +127,6 @@ class Application(ct.CTk):
                 self.stop_event = threading.Event()
                 self.schprocess = threading.Thread(target=self.sch)
                 self.schprocess.start()
-            logging.info("Логирование началось tray основа")
             self.withdraw()
             image = Image.open("images/icon.ico")
             self.icon = pystray.Icon(
@@ -462,11 +459,13 @@ class Application(ct.CTk):
                 if result[0] == "skip":
                     tkinter.messagebox.showerror(
                         title="Недостаточно отзывов",
-                        message=f"Нет цены на товар {link[i]}. Пропуск.",
+                        message=f"Нет цены на товар Kaspi: {link[i]}. Пропуск.",
                         parent=self,
                     )
                 if result[0] == "second_check":
-                    logging.warning(f"Повторная проверка цен для {link[i]}. Пропуск.")
+                    logging.warning(
+                        f"Повторная проверка цен для товара Kaspi: {link[i]}. Пропуск."
+                    )
                     continue
                 item, information, price = result
 
@@ -566,7 +565,6 @@ class Products(ct.CTkToplevel):
         self.active_operations = 0
         self.configure_activity_indicator()
         db_path = DBPath.get_or_init_db_path()
-
 
         self.con = sqlite3.connect(db_path)
         self.create_widgets()

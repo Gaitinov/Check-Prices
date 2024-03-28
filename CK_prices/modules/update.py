@@ -56,10 +56,10 @@ def update_tray():
             if result is None:
                 continue
             if result[0] == "skip":
-                logging.warning(f"Нет цены на товар {link[i]}. Пропуск.")
+                logging.warning(f"Нет цены на товар Kaspi:{link[i]}. Пропуск.")
                 continue
             if result[0] == "second_check":
-                logging.warning(f"Повторная проверка цен для {link[i]}. Пропуск.")
+                logging.warning(f"Данные не обновлены. Пропуск: {link[i]}")
                 continue
 
             item, information, price = result

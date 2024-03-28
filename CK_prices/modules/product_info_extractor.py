@@ -126,11 +126,11 @@ def extract_info_kaspi(url):
                 return "skip", None
             else:
                 logging.warning(
-                    f"Нет подходящего магазина с достаточным количеством отзывов"
+                    f"Нет подходящего магазина с достаточным количеством отзывов на Kaspi"
                 )
                 return "second_check", item, information, price
     except Exception as e:
-        logging.error(f"Произошла ошибка при поиске цены: {e}")
+        logging.error(f"Произошла ошибка при поиске цены у товара на Kaspi:{url}: {e}")
         price = None
         item = "Товара нет в наличии"
     return item, information, price

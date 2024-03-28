@@ -7,7 +7,7 @@ def setup_driver_ozon(url, max_attempts=3):
     attempt = 0
     while attempt < max_attempts:
         try:
-            logging.info(f"Attempt {attempt + 1}: Driver launched")
+            logging.info(f"Attempt from Ozon {attempt + 1}: Driver launched")
             with sync_playwright() as playwright:
                 browser = playwright.chromium.launch(headless=True)
                 context = browser.new_context()
@@ -37,6 +37,7 @@ def setup_driver_ozon(url, max_attempts=3):
                     "#section-description", "element => element.scrollIntoView()"
                 )
                 html = page.content()
+                logging.info("Data from Ozon retrieved.")
                 return html
         except Exception as e:
             logging.error(
@@ -45,5 +46,5 @@ def setup_driver_ozon(url, max_attempts=3):
             time.sleep(5)
             attempt += 1
 
-    logging.error("All attempts failed. Data not retrieved.")
+    logging.error("All attempts failed. Data from Ozon not retrieved.")
     return None

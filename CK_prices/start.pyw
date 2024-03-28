@@ -13,7 +13,10 @@ USER_NAME = getpass.getuser()
 config = configparser.ConfigParser()
 config.read("settings.ini")
 
-enable_price_check_at_start = config.getboolean("DEFAULT", "enable_price_check_at_start")
+enable_price_check_at_start = config.getboolean(
+    "DEFAULT", "enable_price_check_at_start"
+)
+
 
 def is_already_running(exe_name):
     current_pid = os.getpid()
@@ -30,6 +33,7 @@ def is_already_running(exe_name):
 
 def show_message(title, message):
     ctypes.windll.user32.MessageBoxW(0, message, title, 0x40)
+
 
 def add_to_startup():
     file_path = os.path.realpath(__file__)
