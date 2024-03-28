@@ -1,4 +1,3 @@
-import ctypes
 import tkinter
 import tkinter.ttk
 import logging
@@ -21,6 +20,7 @@ from modules.record import Recordlink
 from modules.update import update_tray
 from modules.settings import Settings
 from modules.product_info_extractor import extract_product_info
+from modules.config import CustomEntry, DBPath
 
 
 config = configparser.ConfigParser()
@@ -35,23 +35,6 @@ class Application(ct.CTk):
     app_title = "Учёт цен"
     schprocess = None
     stop_event = None
-
-    def is_ru_lang_keyboard(self):
-        user32 = ctypes.windll.LoadLibrary("user32.dll")
-        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
-
-    def keys(self, event):
-        if self.is_ru_lang_keyboard():
-            if event.keycode == 86:  # 'V' in Russian layout
-                event.widget.event_generate("<<Paste>>")
-            elif event.keycode == 67:  # 'C' in Russian layout
-                event.widget.event_generate("<<Copy>>")
-            elif event.keycode == 88:  # 'X' in Russian layout
-                event.widget.event_generate("<<Cut>>")
-            elif event.keycode == 65535:  # Delete key
-                event.widget.event_generate("<<Clear>>")
-            elif event.keycode == 65:  # 'A' in Russian layout
-                event.widget.event_generate("<<SelectAll>>")
 
     def initialize_logging(self):
         logging.basicConfig(
@@ -72,19 +55,8 @@ class Application(ct.CTk):
         self.initialize_logging()
 
         try:
-            if getattr(sys, "frozen", False):
-                dir_path = sys._MEIPASS
-            else:
-                dir_path = os.path.dirname(os.path.abspath(__file__))
+            db_path = DBPath.get_or_init_db_path()
 
-            db_dir = os.path.join(dir_path, "data")
-
-            if not os.path.exists(db_dir):
-                os.makedirs(db_dir)
-
-            db_path = os.path.join(db_dir, "tab.db")
-
-            self.countter = 0
             self.con = sqlite3.connect(db_path)
             self.create_widgets()
             self.title(Application.app_title)
@@ -178,6 +150,9 @@ class Application(ct.CTk):
         self.graph_image = tkinter.PhotoImage(file=r"images/graph.png")
         self.delete_image = tkinter.PhotoImage(file=r"images/delete.gif")
         self.search_image = tkinter.PhotoImage(file=r"images/search.gif")
+
+        self.entry_menu = CustomEntry(self)
+
         mainmenu = tkinter.Menu(self)
         self.config(menu=mainmenu)
 
@@ -223,6 +198,11 @@ class Application(ct.CTk):
 
         frm = tkinter.ttk.Frame(self)
         entSearch = ct.CTkEntry(frm, textvariable=self.search)
+        entSearch.bind(
+            "<Button-3>",
+            lambda event, widget=entSearch: self.entry_menu.show(event, widget),
+        )
+        entSearch.bind("<Control-KeyPress>", lambda event: self.entry_menu.keys(event))
         entSearch.grid(row=0, column=0, sticky="we")
         btnSearch = tkinter.ttk.Button(
             frm, image=self.search_image, command=self.load_data
@@ -272,8 +252,6 @@ class Application(ct.CTk):
         self.bind("<Destroy>", self.cleanup)
 
         self.trwPB.bind("<Double-1>", self.on_double_click)
-
-        entSearch.bind("<Control-KeyPress>", self.keys)
 
         self.update_button = ct.CTkButton(
             frm, text="Проверить данные", command=self.update
@@ -457,17 +435,7 @@ class Application(ct.CTk):
         self.load_data()
 
     def update_logic(self):
-        if getattr(sys, "frozen", False):
-            dir_path = sys._MEIPASS
-        else:
-            dir_path = os.path.dirname(os.path.abspath(__file__))
-
-        db_dir = os.path.join(dir_path, "data")
-
-        if not os.path.exists(db_dir):
-            os.makedirs(db_dir)
-
-        db_path = os.path.join(db_dir, "tab.db")
+        db_path = DBPath.get_or_init_db_path()
 
         con = sqlite3.connect(db_path)
         cur = con.cursor()
@@ -592,39 +560,13 @@ class Application(ct.CTk):
 class Products(ct.CTkToplevel):
     app_title = "Учёт цен"
 
-    def is_ru_lang_keyboard(self):
-        user32 = ctypes.windll.LoadLibrary("user32.dll")
-        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
-
-    def keys(self, event):
-        if self.is_ru_lang_keyboard():
-            if event.keycode == 86:  # 'V' in Russian layout
-                event.widget.event_generate("<<Paste>>")
-            elif event.keycode == 67:  # 'C' in Russian layout
-                event.widget.event_generate("<<Copy>>")
-            elif event.keycode == 88:  # 'X' in Russian layout
-                event.widget.event_generate("<<Cut>>")
-            elif event.keycode == 65535:  # Delete key
-                event.widget.event_generate("<<Clear>>")
-            elif event.keycode == 65:  # 'A' in Russian layout
-                event.widget.event_generate("<<SelectAll>>")
-
     def __init__(self, parent=None):
         super().__init__()
         self.parent = parent
         self.active_operations = 0
         self.configure_activity_indicator()
-        if getattr(sys, "frozen", False):
-            dir_path = sys._MEIPASS
-        else:
-            dir_path = os.path.dirname(os.path.abspath(__file__))
+        db_path = DBPath.get_or_init_db_path()
 
-        db_dir = os.path.join(dir_path, "data")
-
-        if not os.path.exists(db_dir):
-            os.makedirs(db_dir)
-
-        db_path = os.path.join(db_dir, "tab.db")
 
         self.con = sqlite3.connect(db_path)
         self.create_widgets()
@@ -639,22 +581,9 @@ class Products(ct.CTkToplevel):
         self.parent.load_data()
 
     def center_window(self):
-        self.update_idletasks()  # Обновляем информацию о размерах окна
-
-        # Получаем ширину и высоту окна
-        window_width = self.winfo_width()
-        window_height = self.winfo_height()
-
-        # Получаем ширину и высоту экрана
-        screen_width = self.winfo_screenwidth()
-        screen_height = self.winfo_screenheight()
-
-        # Вычисляем координаты для центрирования окна
-        x = int((screen_width - window_width) / 2)
-        y = int((screen_height - window_height) / 2)
-
-        # Устанавливаем новые координаты окна
-        self.geometry(f"+{x}+{y}")
+        self.geometry(
+            f"800x300+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 300 // 2}"
+        )
 
     def create_widgets(self):
         self.add_image = tkinter.PhotoImage(file=r"images/add.gif")
@@ -662,6 +591,9 @@ class Products(ct.CTkToplevel):
         self.edit_image = tkinter.PhotoImage(file=r"images/edit.gif")
         self.delete_image = tkinter.PhotoImage(file=r"images/delete.gif")
         self.search_image = tkinter.PhotoImage(file=r"images/search.gif")
+
+        self.entry_menu = CustomEntry(self)
+
         mainmenu = tkinter.Menu(self)
         self["menu"] = mainmenu
 
@@ -712,6 +644,11 @@ class Products(ct.CTkToplevel):
 
         frm = tkinter.ttk.Frame(self)
         entSearch = ct.CTkEntry(frm, textvariable=self.search)
+        entSearch.bind(
+            "<Button-3>",
+            lambda event, widget=entSearch: self.entry_menu.show(event, widget),
+        )
+        entSearch.bind("<Control-KeyPress>", lambda event: self.entry_menu.keys(event))
         entSearch.grid(row=0, column=0, sticky="we")
         btnSearch = tkinter.ttk.Button(
             frm, image=self.search_image, command=self.load_data
@@ -730,9 +667,9 @@ class Products(ct.CTkToplevel):
             displaycolumns="#all",
             show="headings",
         )
-        self.trwPB.column("item", minwidth=150)
-        self.trwPB.column("time", minwidth=150)
-        self.trwPB.column("link", minwidth=150)
+        self.trwPB.column("item", minwidth=100)
+        self.trwPB.column("time", minwidth=100)
+        self.trwPB.column("link", minwidth=100)
 
         self.trwPB.heading("item", text="Товар")
         self.trwPB.heading("time", text="Время")
@@ -759,8 +696,6 @@ class Products(ct.CTkToplevel):
         self.bind("<Destroy>", self.cleanup)
 
         self.trwPB.bind("<Double-1>", self.on_double_click)
-
-        entSearch.bind("<Control-KeyPress>", self.keys)
 
         context_menu = tkinter.Menu(self, tearoff=0)
         context_menu.add_command(label="Добавить", command=self.add_record)

@@ -1,5 +1,4 @@
 import tkinter
-import ctypes
 import tkinter.ttk
 import tkinter.messagebox
 import customtkinter as ct
@@ -7,6 +6,7 @@ import configparser
 import os
 import sys
 import sqlite3
+from modules.config import CustomEntry, DBPath
 
 
 class Settings(ct.CTkToplevel):
@@ -15,23 +15,6 @@ class Settings(ct.CTkToplevel):
         self.enable_price_check_var = ct.StringVar(value="off")
         self.init_ui()
         self.load_current_value()
-
-    def is_ru_lang_keyboard(self):
-        user32 = ctypes.windll.LoadLibrary("user32.dll")
-        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
-
-    def keys(self, event):
-        if self.is_ru_lang_keyboard():
-            if event.keycode == 86:  # 'V' in Russian layout
-                event.widget.event_generate("<<Paste>>")
-            elif event.keycode == 67:  # 'C' in Russian layout
-                event.widget.event_generate("<<Copy>>")
-            elif event.keycode == 88:  # 'X' in Russian layout
-                event.widget.event_generate("<<Cut>>")
-            elif event.keycode == 65535:  # Delete key
-                event.widget.event_generate("<<Clear>>")
-            elif event.keycode == 65:  # 'A' in Russian layout
-                event.widget.event_generate("<<SelectAll>>")
 
     def reload_aplication(self):
         new_args = sys.argv[:]
@@ -46,17 +29,7 @@ class Settings(ct.CTkToplevel):
         )
         if response:
             try:
-                if getattr(sys, "frozen", False):
-                    dir_path = sys._MEIPASS
-                else:
-                    dir_path = os.path.dirname(os.path.abspath(__file__))
-
-                db_dir = os.path.join(dir_path, "data")
-
-                if not os.path.exists(db_dir):
-                    os.makedirs(db_dir)
-
-                db_path = os.path.join(db_dir, "tab.db")
+                db_path = DBPath.get_or_init_db_path()
 
                 con = sqlite3.connect(db_path)
                 cur = con.cursor()
@@ -80,6 +53,8 @@ class Settings(ct.CTkToplevel):
             f"800x530+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 530 // 2}"
         )
         self.configure(bg="#f0f0f0")
+
+        self.entry_menu = CustomEntry(self)
 
         frame = ct.CTkFrame(self, corner_radius=10)
         frame.pack(padx=20, pady=20, fill="both", expand=True)
@@ -143,10 +118,18 @@ class Settings(ct.CTkToplevel):
         self.button = ct.CTkButton(frame, text="Сохранить", command=self.save_value)
         self.button.pack(pady=10, padx=10)
 
-        self.entry.bind("<Control-KeyPress>", self.keys)
-        self.entry_price_range_notification.bind("<Control-KeyPress>", self.keys)
-        self.entry_price_range_save_db.bind("<Control-KeyPress>", self.keys)
-        self.entry_min_reviews_count.bind("<Control-KeyPress>", self.keys)
+        for entry in (
+            self.entry,
+            self.entry_price_range_notification,
+            self.entry_price_range_save_db,
+            self.entry_min_reviews_count,
+        ):
+            entry.bind(
+                "<Button-3>",
+                lambda event, widget=entry: self.entry_menu.show(event, widget),
+            )
+            entry.bind("<Control-KeyPress>", lambda event: self.entry_menu.keys(event))
+
         self.resizable(False, False)
         self.grab_set()
 

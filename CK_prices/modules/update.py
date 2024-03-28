@@ -3,9 +3,8 @@ import configparser
 from datetime import datetime
 from modules.product_info_extractor import extract_product_info
 import sqlite3
-import os
-import sys
 from winotify import Notification
+from modules.config import DBPath
 
 config = configparser.ConfigParser()
 config.read("settings.ini")
@@ -35,17 +34,8 @@ def update_tray():
         level=logging.INFO,
     )
     logging.info("Update start")
-    if getattr(sys, "frozen", False):
-        dir_path = sys._MEIPASS
-    else:
-        dir_path = os.path.dirname(os.path.abspath(__file__))
 
-    db_dir = os.path.join(dir_path, "data")
-
-    if not os.path.exists(db_dir):
-        os.makedirs(db_dir)
-
-    db_path = os.path.join(db_dir, "tab.db")
+    db_path = DBPath.get_or_init_db_path()
 
     con = sqlite3.connect(db_path)
     cur = con.cursor()

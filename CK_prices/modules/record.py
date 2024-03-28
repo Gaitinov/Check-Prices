@@ -1,7 +1,4 @@
 import configparser
-import ctypes
-import os
-import sys
 import customtkinter as ct
 import tkinter
 import threading
@@ -9,6 +6,7 @@ import sqlite3
 from datetime import datetime
 from modules.validators import Validators
 from modules.product_info_extractor import extract_product_info
+from modules.config import CustomEntry, DBPath
 
 config = configparser.ConfigParser()
 config.read("settings.ini")
@@ -27,24 +25,9 @@ class Record(ct.CTkToplevel):
         self.focus_set()
         self.grab_set()
 
-    def is_ru_lang_keyboard(self):
-        user32 = ctypes.windll.LoadLibrary("user32.dll")
-        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
-
-    def keys(self, event):
-        if self.is_ru_lang_keyboard():
-            if event.keycode == 86:  # 'V' in Russian layout
-                event.widget.event_generate("<<Paste>>")
-            elif event.keycode == 67:  # 'C' in Russian layout
-                event.widget.event_generate("<<Copy>>")
-            elif event.keycode == 88:  # 'X' in Russian layout
-                event.widget.event_generate("<<Cut>>")
-            elif event.keycode == 65535:  # Delete key
-                event.widget.event_generate("<<Clear>>")
-            elif event.keycode == 65:  # 'A' in Russian layout
-                event.widget.event_generate("<<SelectAll>>")
-
     def create_widgets(self, record):
+        self.entry_menu = CustomEntry(self)
+
         grid_params = {"padx": 10, "pady": 6}
 
         self.id_record = record["id_record"]
@@ -102,6 +85,20 @@ class Record(ct.CTkToplevel):
         )
         self.entinformation.grid(row=5, column=1, sticky="we", **grid_params)
 
+        for entry in [
+            self.entid_item,
+            self.entitem,
+            self.entprice,
+            self.enttime,
+            self.entlink,
+            self.entinformation,
+        ]:
+            entry.bind(
+                "<Button-3>",
+                lambda event, widget=entry: self.entry_menu.show(event, widget),
+            )
+            entry.bind("<Control-KeyPress>", lambda event: self.entry_menu.keys(event))
+
         self.btnOK = ct.CTkButton(frame, text="ОК", command=self.save_record)
         self.btnOK.grid(row=6, column=0, sticky="e", **grid_params)
         self.btnCancel = ct.CTkButton(frame, text="Отмена", command=self.destroy)
@@ -109,13 +106,6 @@ class Record(ct.CTkToplevel):
 
         self.bind_all("<KeyPress-Return>", lambda evt: self.btnOK.invoke())
         self.bind_all("<KeyPress-Escape>", lambda evt: self.btnCancel.invoke())
-
-        self.entid_item.bind("<Control-KeyPress>", self.keys)
-        self.entitem.bind("<Control-KeyPress>", self.keys)
-        self.entprice.bind("<Control-KeyPress>", self.keys)
-        self.enttime.bind("<Control-KeyPress>", self.keys)
-        self.entlink.bind("<Control-KeyPress>", self.keys)
-        self.entinformation.bind("<Control-KeyPress>", self.keys)
 
         self.bind("<Map>", self.place)
 
@@ -202,24 +192,9 @@ class Recordtop(ct.CTkToplevel):
         self.focus_set()
         self.grab_set()
 
-    def is_ru_lang_keyboard(self):
-        user32 = ctypes.windll.LoadLibrary("user32.dll")
-        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
-
-    def keys(self, event):
-        if self.is_ru_lang_keyboard():
-            if event.keycode == 86:  # 'V' in Russian layout
-                event.widget.event_generate("<<Paste>>")
-            elif event.keycode == 67:  # 'C' in Russian layout
-                event.widget.event_generate("<<Copy>>")
-            elif event.keycode == 88:  # 'X' in Russian layout
-                event.widget.event_generate("<<Cut>>")
-            elif event.keycode == 65535:  # Delete key
-                event.widget.event_generate("<<Clear>>")
-            elif event.keycode == 65:  # 'A' in Russian layout
-                event.widget.event_generate("<<SelectAll>>")
-
     def create_widgets(self, record):
+        self.entry_menu = CustomEntry(self)
+
         grid_params = {"padx": 10, "pady": 6}
 
         self.id_item = record["id_item"]
@@ -252,6 +227,13 @@ class Recordtop(ct.CTkToplevel):
         self.entlink = ct.CTkEntry(frame, textvariable=self.link, width=600)
         self.entlink.grid(row=2, column=1, sticky="we", **grid_params)
 
+        for entry in [self.entitem, self.enttime, self.entlink]:
+            entry.bind(
+                "<Button-3>",
+                lambda event, widget=entry: self.entry_menu.show(event, widget),
+            )
+            entry.bind("<Control-KeyPress>", lambda event: self.entry_menu.keys(event))
+
         self.btnOK = ct.CTkButton(frame, text="ОК", command=self.save_record)
         self.btnOK.grid(row=3, column=0, sticky="e", **grid_params)
         self.btnCancel = ct.CTkButton(frame, text="Отмена", command=self.destroy)
@@ -261,10 +243,6 @@ class Recordtop(ct.CTkToplevel):
         self.bind_all("<Alt-KeyPress-y>", lambda evt: self.enttime.focus_set())
         self.bind_all("<KeyPress-Return>", lambda evt: self.btnOK.invoke())
         self.bind_all("<KeyPress-Escape>", lambda evt: self.btnCancel.invoke())
-
-        self.entitem.bind("<Control-KeyPress>", self.keys)
-        self.enttime.bind("<Control-KeyPress>", self.keys)
-        self.entlink.bind("<Control-KeyPress>", self.keys)
 
         self.bind("<Map>", self.place)
 
@@ -302,17 +280,8 @@ class Recordtop(ct.CTkToplevel):
         self.destroy()
 
     def save_record_logic(self):
-        if getattr(sys, "frozen", False):
-            dir_path = sys._MEIPASS
-        else:
-            dir_path = os.path.dirname(os.path.abspath(__file__))
+        db_path = DBPath.get_or_init_db_path()
 
-        db_dir = os.path.join(dir_path, "data")
-
-        if not os.path.exists(db_dir):
-            os.makedirs(db_dir)
-
-        db_path = os.path.join(db_dir, "tab.db")
         if not self.id_item:
             if "flip" in self.link.get():
                 item, information, price = extract_product_info(self.link.get())
@@ -432,24 +401,9 @@ class Recordlink(ct.CTkToplevel):
         self.focus_set()
         self.grab_set()
 
-    def is_ru_lang_keyboard(self):
-        user32 = ctypes.windll.LoadLibrary("user32.dll")
-        return hex(user32.GetKeyboardLayout(0)) == "0x4190419"
-
-    def keys(self, event):
-        if self.is_ru_lang_keyboard():
-            if event.keycode == 86:  # 'V' in Russian layout
-                event.widget.event_generate("<<Paste>>")
-            elif event.keycode == 67:  # 'C' in Russian layout
-                event.widget.event_generate("<<Copy>>")
-            elif event.keycode == 88:  # 'X' in Russian layout
-                event.widget.event_generate("<<Cut>>")
-            elif event.keycode == 65535:  # Delete key
-                event.widget.event_generate("<<Clear>>")
-            elif event.keycode == 65:  # 'A' in Russian layout
-                event.widget.event_generate("<<SelectAll>>")
-
     def create_widgets(self):
+        self.entry_menu = CustomEntry(self)
+
         grid_params = {"padx": 10, "pady": 6}
 
         frame = ct.CTkFrame(self, corner_radius=10, bg_color="#f0f0f0")
@@ -463,6 +417,14 @@ class Recordlink(ct.CTkToplevel):
         self.entlink = ct.CTkEntry(frame, textvariable=self.link, width=600)
         self.entlink.grid(row=0, column=1, sticky="we", **grid_params)
 
+        self.entlink.bind(
+            "<Button-3>",
+            lambda event, widget=self.entlink: self.entry_menu.show(event, widget),
+        )
+        self.entlink.bind(
+            "<Control-KeyPress>", lambda event: self.entry_menu.keys(event)
+        )
+
         self.btnOK = ct.CTkButton(frame, text="ОК", command=self.save_record)
         self.btnOK.grid(row=1, column=0, sticky="e", **grid_params)
 
@@ -473,8 +435,6 @@ class Recordlink(ct.CTkToplevel):
         self.bind_all("<Alt-KeyPress-y>", lambda evt: self.enttime.focus_set())
         self.bind_all("<KeyPress-Return>", lambda evt: self.btnOK.invoke())
         self.bind_all("<KeyPress-Escape>", lambda evt: self.btnCancel.invoke())
-
-        self.entlink.bind("<Control-KeyPress>", self.keys)
 
         self.bind("<Map>", self.place)
 
@@ -503,17 +463,8 @@ class Recordlink(ct.CTkToplevel):
         self.destroy()
 
     def save_record_logic(self):
-        if getattr(sys, "frozen", False):
-            dir_path = sys._MEIPASS
-        else:
-            dir_path = os.path.dirname(os.path.abspath(__file__))
+        db_path = DBPath.get_or_init_db_path()
 
-        db_dir = os.path.join(dir_path, "data")
-
-        if not os.path.exists(db_dir):
-            os.makedirs(db_dir)
-
-        db_path = os.path.join(db_dir, "tab.db")
         if "flip" in self.link.get():
             item, information, price = extract_product_info(self.link.get())
 
