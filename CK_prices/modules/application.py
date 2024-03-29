@@ -193,7 +193,7 @@ class Application(ct.CTk):
         self.search = tkinter.StringVar()
         self.search.set("")
 
-        frm = tkinter.ttk.Frame(self)
+        frm = ct.CTkFrame(self)
         entSearch = ct.CTkEntry(frm, textvariable=self.search)
         entSearch.bind(
             "<Button-3>",
@@ -642,7 +642,7 @@ class Products(ct.CTkToplevel):
         self.activity_indicator.grid(row=3, column=0, pady=10, padx=10, sticky="ew")
         self.activity_indicator.grid_remove()  # Скрыть по умолчанию
 
-        frm = tkinter.ttk.Frame(self)
+        frm = ct.CTkFrame(self)
         entSearch = ct.CTkEntry(frm, textvariable=self.search)
         entSearch.bind(
             "<Button-3>",
