@@ -38,7 +38,7 @@ class Application(ct.CTk):
 
     def initialize_logging(self):
         logging.basicConfig(
-            filename="app.log",
+            filename="Logs.log",
             filemode="w",
             format="%(asctime)s - %(levelname)s - %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
@@ -266,8 +266,10 @@ class Application(ct.CTk):
 
         def show_context_menu(event):
             row_id = self.trwPB.identify_row(event.y)
-            self.trwPB.selection_set(row_id)
-            context_menu.post(event.x_root, event.y_root)
+            if row_id:
+                self.trwPB.selection_set(row_id)
+                self.trwPB.focus(row_id)
+                context_menu.post(event.x_root, event.y_root)
 
         self.trwPB.bind("<Button-3>", show_context_menu)
 
@@ -705,8 +707,10 @@ class Products(ct.CTkToplevel):
 
         def show_context_menu(event):
             row_id = self.trwPB.identify_row(event.y)
-            self.trwPB.selection_set(row_id)
-            context_menu.post(event.x_root, event.y_root)
+            if row_id:
+                self.trwPB.selection_set(row_id)
+                self.trwPB.focus(row_id)
+                context_menu.post(event.x_root, event.y_root)
 
         self.trwPB.bind("<Button-3>", show_context_menu)
 
