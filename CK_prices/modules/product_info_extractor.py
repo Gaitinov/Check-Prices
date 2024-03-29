@@ -91,7 +91,7 @@ def extract_info_kaspi(url):
             return None
         soup = BS(html, "html.parser")
     except Exception as e:
-        logging.error(f"Произошла ошибка: {e}")
+        logging.error(f"Error: {e}")
 
     try:
         item = soup.find("h1", class_="item__heading").text.strip()
@@ -122,15 +122,17 @@ def extract_info_kaspi(url):
             price = int("".join(filter(str.isdigit, price_text)))
 
             if price is None:
-                logging.warning(f"Не найдено цены у товара на Kaspi")
+                logging.warning(f"No price was found for the product at Kaspi")
                 return "skip", None
             else:
                 logging.warning(
-                    f"Нет подходящего магазина с достаточным количеством отзывов на Kaspi"
+                    f"There is no suitable store with enough reviews on Kaspi"
                 )
                 return "second_check", item, information, price
     except Exception as e:
-        logging.error(f"Произошла ошибка при поиске цены у товара на Kaspi:{url}: {e}")
+        logging.error(
+            f"There was an error when searching for the price of an item on Kaspi:{url}: {e}"
+        )
         price = None
         item = "Товара нет в наличии"
     return item, information, price
@@ -143,13 +145,11 @@ def extract_info_ozon(url):
             return "webOutOfStock"
 
         if html is None:
-            logging.error(
-                "Не удалось получить данные с ozon, переход к следующей записи"
-            )
+            logging.error("Failed to retrieve data from ozon, skip to next entry")
             return None
         soup = BS(html, "html.parser")
     except Exception as e:
-        logging.error(f"Произошла ошибка: {e}")
+        logging.error(f"Error: {e}")
     try:
         item = soup.find(attrs={"data-widget": "webProductHeading"})
         item = item.get_text().strip()

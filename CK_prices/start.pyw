@@ -1,3 +1,13 @@
+import logging
+
+logging.basicConfig(
+            filename="Logs.log",
+            filemode="w",
+            format="%(asctime)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            level=logging.INFO,
+        )
+
 import configparser
 import ctypes
 import subprocess

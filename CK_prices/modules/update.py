@@ -26,13 +26,6 @@ def notifyex():
 
 
 def update_tray():
-    # Настройка логирования
-    logging.basicConfig(
-        filename="app.log",
-        filemode="w",
-        format="%(name)s - %(levelname)s - %(message)s",
-        level=logging.INFO,
-    )
     logging.info("Update start")
 
     db_path = DBPath.get_or_init_db_path()
@@ -56,10 +49,12 @@ def update_tray():
             if result is None:
                 continue
             if result[0] == "skip":
-                logging.warning(f"Нет цены на товар Kaspi:{link[i]}. Пропуск.")
+                logging.warning(
+                    f"There is no price for the product Kaspi:{link[i]}. Skip."
+                )
                 continue
             if result[0] == "second_check":
-                logging.warning(f"Данные не обновлены. Пропуск: {link[i]}")
+                logging.warning(f"Data not updated. Skip: {link[i]}")
                 continue
 
             item, information, price = result
@@ -140,4 +135,4 @@ def update_tray():
             print("Уведомление")
         con.commit()
     except Exception as e:
-        logging.error(f"Произошла ошибка: {e}")
+        logging.error(f"Error: {e}")

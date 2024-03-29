@@ -36,15 +36,7 @@ class Application(ct.CTk):
     schprocess = None
     stop_event = None
 
-    def initialize_logging(self):
-        logging.basicConfig(
-            filename="Logs.log",
-            filemode="w",
-            format="%(asctime)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            level=logging.INFO,
-        )
-        logging.info("Logging started")
+    logging.info("Logging started")
 
     def check_auto_close(self):
         if "--auto-close" in sys.argv and "--from-settings" not in sys.argv:
@@ -52,8 +44,6 @@ class Application(ct.CTk):
 
     def __init__(self):
         super().__init__()
-
-        self.initialize_logging()
 
         try:
             db_path = DBPath.get_or_init_db_path()
@@ -81,27 +71,27 @@ class Application(ct.CTk):
             self.check_auto_close()
             self.mainloop()
         except Exception as e:
-            logging.error("Произошла ошибка: %s", e)
+            logging.error("Error: %s", e)
 
     def sch(self):
         try:
-            print("Запущен поток")
+            print("Thread started")
             threadupdate = None
             while not self.stop_event.is_set():
                 self.stop_event.wait(check_price_interval)
                 if self.stop_event.is_set():
-                    logging.info("Поток break")
-                    print("Поток break")
+                    logging.info("The thread is broken")
+                    print("Thread is broken")
                     break
 
                 if threadupdate is None or not threadupdate.is_alive():
                     threadupdate = threading.Thread(target=update_tray)
                     threadupdate.daemon = True
                     threadupdate.start()
-                    logging.info("Поток запущен")
+                    logging.info("Thread started")
 
         except Exception as e:
-            logging.error("Произошла ошибка: %s", e)
+            logging.error("Error: %s", e)
 
     def exitstray(self):
         logging.info("The application moved to the tray")
@@ -139,7 +129,7 @@ class Application(ct.CTk):
             )
             self.icon.run()
         except Exception as e:
-            logging.error("Произошла ошибка: %s", e)
+            logging.error("Error: %s", e)
 
     def create_widgets(self):
         self.add_image = tkinter.PhotoImage(file=r"images/add.gif")
