@@ -14,6 +14,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{F218A1E2-15BC-4EEF-981B-600B17442CE0}
 AppName={#MyAppName}
+AppMutex={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
@@ -28,13 +29,15 @@ SetupIconFile=C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+AppComments=ѕрограмма дл€ автоматического отслеживани€ изменений цен в интернет-магазинах
+CreateUninstallRegKey=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
 
 [Files]
 Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
