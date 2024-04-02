@@ -7,7 +7,7 @@ def setup_driver_ozon(url, max_attempts=3):
     attempt = 0
     while attempt < max_attempts:
         try:
-            logging.info(f"Attempt from Ozon {attempt + 1}: Driver launched")
+            logging.info("Attempt from Ozon %s: Driver launched", attempt + 1)
             with sync_playwright() as playwright:
                 browser = playwright.chromium.launch(headless=True)
                 context = browser.new_context()
@@ -41,7 +41,9 @@ def setup_driver_ozon(url, max_attempts=3):
                 return html
         except Exception as e:
             logging.error(
-                f"Error occurred while fetching data from Ozon on attempt {attempt + 1}: {str(e)}"
+                "Error occurred while fetching data from Ozon on attempt %s: %s",
+                attempt + 1,
+                str(e),
             )
             time.sleep(5)
             attempt += 1

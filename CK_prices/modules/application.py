@@ -98,7 +98,7 @@ class Application(ct.CTk):
 
         def action():
             try:
-                print("Поток остановлен")
+                print("Thread stopped")
                 self.stop_event.set()
                 self.deiconify()
                 self.icon.stop()
@@ -711,7 +711,6 @@ class Products(ct.CTkToplevel):
     def on_double_click(self, event):
         r = self.trwPB.focus()
         if r:
-            cur = self.con.cursor()
             selected_item = self.trwPB.selection()[0]
             values = self.trwPB.item(selected_item)
             url = values.get("values")[2]

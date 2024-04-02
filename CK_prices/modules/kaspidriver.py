@@ -7,7 +7,7 @@ def setup_driver_kaspi(url, max_attempts=3):
     attempt = 0
     while attempt < max_attempts:
         try:
-            logging.info(f"Attempt from Kaspi {attempt + 1}: Driver launched")
+            logging.info("Attempt from Kaspi %s: Driver launched", attempt + 1)
             with sync_playwright() as playwright:
                 browser = playwright.chromium.launch(headless=True)
                 context = browser.new_context()
@@ -18,7 +18,7 @@ def setup_driver_kaspi(url, max_attempts=3):
                 logging.info("Data from Kaspi retrieved.")
                 return html
         except Exception as e:
-            logging.error(f"Error occurred while fetching data from Kaspi: {str(e)}")
+            logging.error("Error occurred while fetching data from Kaspi: %s", str(e))
             time.sleep(5)
             attempt += 1
     logging.error("All attempts failed. Data from Kaspi not retrieved.")

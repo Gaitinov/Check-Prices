@@ -1,19 +1,18 @@
 import logging
-
-logging.basicConfig(
-            filename="Logs.log",
-            filemode="w",
-            format="%(asctime)s - %(levelname)s - %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            level=logging.INFO,
-        )
-
 import configparser
 import ctypes
 import subprocess
 import os
 import getpass
 import threading
+
+logging.basicConfig(
+    filename="Logs.log",
+    filemode="w",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+)
 
 from modules.application import Application
 from modules.update import update_tray
@@ -69,4 +68,4 @@ if not is_already_running("CheckPrices.exe"):
         threadupdate = threading.Thread(target=update_tray)
         threadupdate.daemon = True
         threadupdate.start()
-    app = Application()
+    Application()

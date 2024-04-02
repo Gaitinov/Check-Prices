@@ -1,7 +1,7 @@
+import logging
 import configparser
 import requests
 from bs4 import BeautifulSoup as BS
-import logging
 from modules.kaspidriver import setup_driver_kaspi
 from modules.ozondriver import setup_driver_ozon
 
@@ -91,7 +91,7 @@ def extract_info_kaspi(url):
             return None
         soup = BS(html, "html.parser")
     except Exception as e:
-        logging.error(f"Error: {e}")
+        logging.error("Error: %s", e)
 
     try:
         item = soup.find("h1", class_="item__heading").text.strip()

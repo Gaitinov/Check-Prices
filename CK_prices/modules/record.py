@@ -1,9 +1,9 @@
 import configparser
-import customtkinter as ct
 import tkinter
 import threading
 import sqlite3
 from datetime import datetime
+import customtkinter as ct
 from modules.validators import Validators
 from modules.product_info_extractor import extract_product_info
 from modules.config import CustomEntry, DBPath

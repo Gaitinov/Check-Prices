@@ -1,11 +1,11 @@
 import tkinter
 import tkinter.ttk
 import tkinter.messagebox
-import customtkinter as ct
 import configparser
 import os
 import sys
 import sqlite3
+import customtkinter as ct
 from modules.config import CustomEntry, DBPath
 
 

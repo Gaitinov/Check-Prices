@@ -1,10 +1,10 @@
 import logging
 import configparser
 from datetime import datetime
-from modules.product_info_extractor import extract_product_info
 import sqlite3
 from winotify import Notification
 from modules.config import DBPath
+from modules.product_info_extractor import extract_product_info
 
 config = configparser.ConfigParser()
 config.read("settings.ini")
