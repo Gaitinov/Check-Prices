@@ -433,27 +433,29 @@ class Application(ct.CTk):
         link = [x[0] for x in link]
         link_count = len(link)
         price_interval = 0
+        error_messages = []
 
         for i in range(link_count):
             if "flip" in link[i]:
                 item, information, price = extract_product_info(link[i])
+                if item is None:
+                    error_messages.append(f"Не удалось получить данные с {link[i]}.")
 
             elif "technodom" in link[i]:
                 item, information, price = extract_product_info(link[i])
+                if item is None:
+                    error_messages.append(f"Не удалось получить данные с {link[i]}.")
 
             elif "kaspi" in link[i]:
                 result = extract_product_info(link[i])
                 if result is None:
-                    tkinter.messagebox.showerror(
-                        title="Ошибка загрузки данных",
-                        message="Не удалось получить данные с kaspi.",
+                    error_messages.append(
+                        f"Не удалось получить данные с kaspi: {link[i]}."
                     )
                     continue
                 if result[0] == "skip":
-                    tkinter.messagebox.showerror(
-                        title="Недостаточно отзывов",
-                        message=f"Нет цены на товар Kaspi: {link[i]}. Пропуск.",
-                        parent=self,
+                    error_messages.append(
+                        f" Пропуск. Нет цены на товар Kaspi: {link[i]}."
                     )
                 if result[0] == "second_check":
                     logging.warning(
@@ -465,9 +467,8 @@ class Application(ct.CTk):
             elif "ozon" in link[i]:
                 result = extract_product_info(link[i])
                 if result is None:
-                    tkinter.messagebox.showerror(
-                        title="Ошибка загрузки данных",
-                        message="Не удалось получить данные с ozon.",
+                    error_messages.append(
+                        f"Не удалось получить данные с ozon:  {link[i]}."
                     )
                     continue
                 elif result == "webOutOfStock":
@@ -480,9 +481,7 @@ class Application(ct.CTk):
                     item, information, price = result
 
             else:
-                tkinter.messagebox.showerror(
-                    "Ошибка", f"Неизвестный магазин: {link[i]}"
-                )
+                error_messages.append(f"Неизвестный магазин: {link[i]}")
                 continue
 
             time = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
@@ -541,11 +540,18 @@ class Application(ct.CTk):
                     + "values (?, ? ,? , ? , ?, ?)",
                     (id_item, item, price, time, link[i], information),
                 )
+
+        con.commit()
+
+        if error_messages:
+            tkinter.messagebox.showerror(
+                "Ошибки во время выполнения", "\n\n".join(error_messages)
+            )
+
         if price_interval < price_range_for_save_to_db:
             tkinter.messagebox.showinfo("Уведомление", "Изменений нет", parent=self)
         else:
             tkinter.messagebox.showinfo("Уведомление", "Цены изменились", parent=self)
-        con.commit()
         logging.info("Update from the application: finished")
         self.after(0, self.update_complete_callback)
 
