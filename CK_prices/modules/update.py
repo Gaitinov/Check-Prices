@@ -26,7 +26,7 @@ def notifyex():
 
 
 def update_tray():
-    logging.info("Update start")
+    logging.info("Update from tray: started")
 
     db_path = DBPath.get_or_init_db_path()
 
@@ -134,5 +134,6 @@ def update_tray():
             notifyex()
             print("Уведомление")
         con.commit()
+        logging.info("Update from tray: finished")
     except Exception as e:
         logging.error(f"Error: {e}")

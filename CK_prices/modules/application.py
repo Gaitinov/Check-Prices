@@ -425,6 +425,7 @@ class Application(ct.CTk):
 
     def update_logic(self):
         db_path = DBPath.get_or_init_db_path()
+        logging.info("Update from the application: started")
 
         con = sqlite3.connect(db_path)
         cur = con.cursor()
@@ -545,6 +546,7 @@ class Application(ct.CTk):
         else:
             tkinter.messagebox.showinfo("Уведомление", "Цены изменились", parent=self)
         con.commit()
+        logging.info("Update from the application: finished")
         self.after(0, self.update_complete_callback)
 
 
