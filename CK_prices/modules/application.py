@@ -53,16 +53,15 @@ class Application(ct.CTk):
             self.title(Application.app_title)
             self.iconbitmap(r"images/icon.ico")
 
-            # Добавляем эти строки для центрирования окна и вывода его поверх других
-            self.update_idletasks()  # Обновление состояния окна
-            window_width = self.winfo_reqwidth()
-            window_height = self.winfo_reqheight()
+            self.update_idletasks()
+            window_width = 1200
+            window_height = 400
             position_right = int(self.winfo_screenwidth() / 2 - window_width / 2)
             position_down = int(self.winfo_screenheight() / 2 - window_height / 2)
             self.geometry(
                 f"{window_width}x{window_height}+{position_right}+{position_down}"
             )
-            self.attributes("-topmost", True)  # Поверх всех окон
+            self.attributes("-topmost", True)
             self.after_idle(
                 self.attributes, "-topmost", False
             )  # Затем возвращаем обычный режим
@@ -248,6 +247,12 @@ class Application(ct.CTk):
         button = ct.CTkButton(frm, text="Товары", command=self.newwindow)
         button.grid(row=0, column=4, padx=20, pady=5)
 
+        self.activity_indicator = ct.CTkLabel(
+            self, text="Проверка цен...", font=("Arial", 12)
+        )
+        self.activity_indicator.grid(row=3, column=0, pady=10, padx=10, sticky="ew")
+        self.activity_indicator.grid_remove()
+
         context_menu = tkinter.Menu(self, tearoff=0)
         context_menu.add_command(label="Создать график", command=self.create_graph)
         context_menu.add_command(label="Добавить", command=self.add_record)
@@ -423,6 +428,11 @@ class Application(ct.CTk):
         self.update_button.configure(text="Проверить данные", state="normal")
         self.load_data()
 
+    def update_activity_indicator(self):
+        self.activity_indicator.configure(
+            text=f"Проверка цен... ({self.checked_items}/{self.total_items})"
+        )
+
     def update_logic(self):
         db_path = DBPath.get_or_init_db_path()
         logging.info("Update from the application: started")
@@ -434,6 +444,10 @@ class Application(ct.CTk):
         link_count = len(link)
         price_interval = 0
         error_messages = []
+        self.total_items = len(link)
+        self.checked_items = 0
+        self.activity_indicator.grid()
+        self.after(0, self.update_activity_indicator)
 
         for i in range(link_count):
             if "flip" in link[i]:
@@ -541,6 +555,9 @@ class Application(ct.CTk):
                     (id_item, item, price, time, link[i], information),
                 )
 
+            self.checked_items += 1
+            self.after(0, self.update_activity_indicator)
+
         con.commit()
 
         if error_messages:
@@ -554,6 +571,7 @@ class Application(ct.CTk):
             tkinter.messagebox.showinfo("Уведомление", "Цены изменились", parent=self)
         logging.info("Update from the application: finished")
         self.after(0, self.update_complete_callback)
+        self.activity_indicator.grid_remove()
 
 
 class Products(ct.CTkToplevel):
@@ -753,7 +771,7 @@ class Products(ct.CTkToplevel):
         # Инициализация и настройка индикатора активности
         self.activity_indicator = ct.CTkLabel(self, text="", font=("Arial", 12))
         self.activity_indicator.grid(row=3, column=0, pady=10, padx=10, sticky="ew")
-        self.activity_indicator.grid_remove()  # Скрыть по умолчанию
+        self.activity_indicator.grid_remove()
 
     def update_activity_indicator(self):
         if self.active_operations > 0:
