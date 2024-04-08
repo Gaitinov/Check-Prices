@@ -163,74 +163,85 @@ class Settings(ct.CTkToplevel):
         )
 
     def save_value(self):
-        value = self.entry.get()
-        price_range_notification = self.entry_price_range_notification.get()
-        price_range_save_db = self.entry_price_range_save_db.get()
-        config = configparser.ConfigParser()
-        config.read("settings.ini")
+        response = tkinter.messagebox.askyesno(
+            "Подтверждение сохранения",
+            "Программа будет перезапущена для применения изменений. Продолжить?",
+        )
+        if response:
+            value = self.entry.get()
+            price_range_notification = self.entry_price_range_notification.get()
+            price_range_save_db = self.entry_price_range_save_db.get()
+            config = configparser.ConfigParser()
+            config.read("settings.ini")
 
-        try:
-            price_range_save = int(price_range_save_db)
-            if price_range_save < 0:
-                raise ValueError("Введите корректный диапазон цен для сохранения")
-            config.set(
-                "DEFAULT", "PRICE_RANGE_FOR_SAVE_TO_DB", str(price_range_save)
-            )  # Сохранение как строки
-        except ValueError as e:
-            tkinter.messagebox.showerror("Ошибка диапазона цен для сохранения", str(e))
-            return
-
-        try:
-            value_int = int(value)
-            if value_int <= 59 or value_int > 100000:
-                raise ValueError(
-                    "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000"
+            try:
+                price_range_save = int(price_range_save_db)
+                if price_range_save < 0:
+                    raise ValueError("Введите корректный диапазон цен для сохранения")
+                config.set(
+                    "DEFAULT", "PRICE_RANGE_FOR_SAVE_TO_DB", str(price_range_save)
+                )  # Сохранение как строки
+            except ValueError as e:
+                tkinter.messagebox.showerror(
+                    "Ошибка диапазона цен для сохранения", str(e)
                 )
-            config.set("DEFAULT", "CHECK_PRICE_INTERVAL", value)
-        except ValueError as e:
-            tkinter.messagebox.showerror("Ошибка интервала проверки цен в фоне", str(e))
-            return
+                return
 
-        try:
-            price_range_notification = int(price_range_notification)
-            if price_range_notification < price_range_save:
-                raise ValueError(
-                    "Введите корректный диапазон цен для уведомлений, который больше или равен диапазону цен для сохранения"
+            try:
+                value_int = int(value)
+                if value_int <= 59 or value_int > 100000:
+                    raise ValueError(
+                        "Введите корректное положительное число, не равное нулю, не меньше 60 и не больше 100000"
+                    )
+                config.set("DEFAULT", "CHECK_PRICE_INTERVAL", value)
+            except ValueError as e:
+                tkinter.messagebox.showerror(
+                    "Ошибка интервала проверки цен в фоне", str(e)
                 )
-            config.set(
-                "DEFAULT", "PRICE_RANGE_NOTIFICATION", str(price_range_notification)
-            )
-        except ValueError as e:
-            tkinter.messagebox.showerror("Ошибка диапазона цен для уведомлений", str(e))
-            return
+                return
 
-        try:
-            min_reviews_count = int(self.entry_min_reviews_count.get())
-            if min_reviews_count < 0:
-                raise ValueError("Введите корректное количество отзывов")
-            config.set("DEFAULT", "MIN_REVIEWS_COUNT", str(min_reviews_count))
-        except ValueError as e:
-            tkinter.messagebox.showerror("Ошибка в количестве отзывов", str(e))
-            return
+            try:
+                price_range_notification = int(price_range_notification)
+                if price_range_notification < price_range_save:
+                    raise ValueError(
+                        "Введите корректный диапазон цен для уведомлений, который больше или равен диапазону цен для сохранения"
+                    )
+                config.set(
+                    "DEFAULT", "PRICE_RANGE_NOTIFICATION", str(price_range_notification)
+                )
+            except ValueError as e:
+                tkinter.messagebox.showerror(
+                    "Ошибка диапазона цен для уведомлений", str(e)
+                )
+                return
 
-        try:
-            enable_price_check_at_start_value = (
-                "1" if self.enable_price_check_var.get() == "on" else "0"
-            )
-            config.set(
-                "DEFAULT",
-                "enable_price_check_at_start",
-                enable_price_check_at_start_value,
-            )
-        except ValueError as e:
-            tkinter.messagebox.showerror(
-                "Ошибка включения проверки цен при запуске программы", str(e)
-            )
-            return
+            try:
+                min_reviews_count = int(self.entry_min_reviews_count.get())
+                if min_reviews_count < 0:
+                    raise ValueError("Введите корректное количество отзывов")
+                config.set("DEFAULT", "MIN_REVIEWS_COUNT", str(min_reviews_count))
+            except ValueError as e:
+                tkinter.messagebox.showerror("Ошибка в количестве отзывов", str(e))
+                return
 
-        with open("settings.ini", "w") as configfile:
-            config.write(configfile)
+            try:
+                enable_price_check_at_start_value = (
+                    "1" if self.enable_price_check_var.get() == "on" else "0"
+                )
+                config.set(
+                    "DEFAULT",
+                    "enable_price_check_at_start",
+                    enable_price_check_at_start_value,
+                )
+            except ValueError as e:
+                tkinter.messagebox.showerror(
+                    "Ошибка включения проверки цен при запуске программы", str(e)
+                )
+                return
 
-        self.reload_aplication()
+            with open("settings.ini", "w") as configfile:
+                config.write(configfile)
 
-        self.destroy()
+            self.reload_aplication()
+
+            self.destroy()
