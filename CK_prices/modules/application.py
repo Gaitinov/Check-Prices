@@ -104,6 +104,8 @@ class Application(ct.CTk):
                 self.load_data()
                 self.lift()  # Поднимаем окно на передний план
                 self.focus_force()  # Принудительно устанавливаем фокус на окне
+                self.is_in_tray = False
+                self.after(0, self.update_activity_indicator)
                 logging.info("The application is out of the tray")
             except Exception as e:
                 logging.error("Error: %s", e)
@@ -116,6 +118,7 @@ class Application(ct.CTk):
                 self.stop_event = threading.Event()
                 self.schprocess = threading.Thread(target=self.sch)
                 self.schprocess.start()
+            self.is_in_tray = True
             self.withdraw()
             image = Image.open("images/icon.ico")
             self.icon = pystray.Icon(
@@ -556,7 +559,8 @@ class Application(ct.CTk):
                 )
 
             self.checked_items += 1
-            self.after(0, self.update_activity_indicator)
+            if not self.is_in_tray:
+                self.after(0, self.update_activity_indicator)
 
         con.commit()
 
