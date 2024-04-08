@@ -133,8 +133,7 @@ def extract_info_kaspi(url):
         logging.error(
             f"There was an error when searching for the price of an item on Kaspi:{url}: {e}"
         )
-        price = None
-        item = "Товара нет в наличии"
+        return None
     return item, information, price
 
 
