@@ -118,7 +118,12 @@ def extract_info_kaspi(url):
                     price = int("".join(filter(str.isdigit, price_text)))
                     break
         else:
-            price_text = soup.find("div", class_="item__price-once").text.strip()
+            price_text = soup.find("div", class_="item__price-once")
+            if price_text is not None:
+                price_text = price_text.text.strip()
+            else:
+                price = 0
+                return item, information, price
             price = int("".join(filter(str.isdigit, price_text)))
 
             if price is None:
