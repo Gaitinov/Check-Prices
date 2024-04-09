@@ -48,6 +48,7 @@ class Application(ct.CTk):
         try:
             self.total_items = 0
             self.checked_items = 0
+            self.is_in_tray = False
 
             db_path = DBPath.get_or_init_db_path()
 
