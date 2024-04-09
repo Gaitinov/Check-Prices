@@ -33,19 +33,22 @@ min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 
 class Application(ct.CTk):
     app_title = "Учёт цен"
-    schprocess = None
+    tray_price_check_thread = None
     stop_event = None
 
     logging.info("Logging started")
 
     def check_auto_close(self):
         if "--auto-close" in sys.argv and "--from-settings" not in sys.argv:
-            self.exitstray()
+            self.setup_for_tray()
 
     def __init__(self):
         super().__init__()
 
         try:
+            self.total_items = 0
+            self.checked_items = 0
+
             db_path = DBPath.get_or_init_db_path()
 
             self.con = sqlite3.connect(db_path)
@@ -66,13 +69,13 @@ class Application(ct.CTk):
                 self.attributes, "-topmost", False
             )  # Затем возвращаем обычный режим
 
-            self.protocol("WM_DELETE_WINDOW", self.exitstray)
+            self.protocol("WM_DELETE_WINDOW", self.setup_for_tray)
             self.check_auto_close()
             self.mainloop()
         except Exception as e:
             logging.error("Error: %s", e)
 
-    def sch(self):
+    def start_tray_price_check_thread(self):
         try:
             print("Thread started")
             threadupdate = None
@@ -92,10 +95,10 @@ class Application(ct.CTk):
         except Exception as e:
             logging.error("Error: %s", e)
 
-    def exitstray(self):
+    def setup_for_tray(self):
         logging.info("The application moved to the tray")
 
-        def action():
+        def restore_application_window():
             try:
                 print("Thread stopped")
                 self.stop_event.set()
@@ -110,14 +113,19 @@ class Application(ct.CTk):
             except Exception as e:
                 logging.error("Error: %s", e)
 
-        def exitall(icon, item):
+        def exit_application(icon, item):
             os._exit(0)
 
         try:
-            if self.schprocess is None or not self.schprocess.is_alive():
+            if (
+                self.tray_price_check_thread is None
+                or not self.tray_price_check_thread.is_alive()
+            ):
                 self.stop_event = threading.Event()
-                self.schprocess = threading.Thread(target=self.sch)
-                self.schprocess.start()
+                self.tray_price_check_thread = threading.Thread(
+                    target=self.start_tray_price_check_thread
+                )
+                self.tray_price_check_thread.start()
             self.is_in_tray = True
             self.withdraw()
             image = Image.open("images/icon.ico")
@@ -126,7 +134,8 @@ class Application(ct.CTk):
                 image,
                 "Check price",
                 menu=pystray.Menu(
-                    item("Развернуть", action, default=True), item("Выйти", exitall)
+                    item("Развернуть", restore_application_window, default=True),
+                    item("Выйти", exit_application),
                 ),
             )
             self.icon.run()
