@@ -248,7 +248,7 @@ class Application(ct.CTk):
         self.bind_all("<KeyPress-F5>", lambda evt: self.editmenu.invoke(2))
         self.bind_all("<KeyPress-F8>", lambda evt: self.editmenu.invoke(4))
 
-        self.bind("<Destroy>", self.cleanup)
+        self.bind("<Destroy>", self.close_database_connection)
 
         self.trwPB.bind("<Double-1>", self.on_double_click)
 
@@ -257,7 +257,7 @@ class Application(ct.CTk):
         )
         self.update_button.grid(row=0, column=3, padx=20, pady=5)
 
-        button = ct.CTkButton(frm, text="Товары", command=self.newwindow)
+        button = ct.CTkButton(frm, text="Товары", command=self.open_products_window)
         button.grid(row=0, column=4, padx=20, pady=5)
 
         self.activity_indicator = ct.CTkLabel(
@@ -292,7 +292,7 @@ class Application(ct.CTk):
             url = values.get("values")[4]
         webbrowser.open(url)
 
-    def cleanup(self, evt):
+    def close_database_connection(self, evt):
         self.con.close()
 
     def load_data(self):
@@ -424,9 +424,9 @@ class Application(ct.CTk):
             Application.app_title, "© Учёт цен, 2022 г.", parent=self
         )
 
-    def newwindow(self):
-        apps = Products(parent=self)
-        apps.mainloop()
+    def open_products_window(self):
+        productswindow = Products(parent=self)
+        productswindow.mainloop()
 
     def open_settings(self):
         settings = Settings()
@@ -640,7 +640,7 @@ class Products(ct.CTkToplevel):
             accelerator="F2",
             image=self.addlink_image,
             compound=tkinter.LEFT,
-            command=self.add_link,
+            command=self.add_product_by_link,
         )
         self.editmenu.add_command(
             label="Изменить",
@@ -685,7 +685,7 @@ class Products(ct.CTkToplevel):
         )
         btnSearch.grid(row=0, column=1, pady=5, padx=(1, 15))
 
-        self.add_button = ct.CTkButton(frm, text="Добавить", command=self.add_link)
+        self.add_button = ct.CTkButton(frm, text="Добавить", command=self.add_product_by_link)
         self.add_button.grid(row=0, column=4, padx=20, pady=5)
 
         frm.grid_columnconfigure(0, weight=1)
@@ -723,14 +723,14 @@ class Products(ct.CTkToplevel):
         self.bind_all("<KeyPress-F5>", lambda evt: self.editmenu.invoke(2))
         self.bind_all("<KeyPress-F8>", lambda evt: self.editmenu.invoke(4))
 
-        self.bind("<Destroy>", self.cleanup)
+        self.bind("<Destroy>", self.close_database_connection)
 
         self.trwPB.bind("<Double-1>", self.on_double_click)
 
         context_menu = tkinter.Menu(self, tearoff=0)
         context_menu.add_command(label="Добавить", command=self.add_record)
         context_menu.add_command(
-            label="Добавить товар по ссылке", command=self.add_link
+            label="Добавить товар по ссылке", command=self.add_product_by_link
         )
         context_menu.add_command(label="Изменить", command=self.edit_record)
         context_menu.add_command(label="Удалить", command=self.delete_record)
@@ -756,7 +756,7 @@ class Products(ct.CTkToplevel):
             url = values.get("values")[2]
         webbrowser.open(url)
 
-    def cleanup(self, evt):
+    def close_database_connection(self, evt):
         self.con.close()
 
     def load_data(self):
@@ -778,7 +778,7 @@ class Products(ct.CTkToplevel):
         rec = {"id_item": None, "item": "", "time": "", "link": ""}
         Recordtop(parent=self, record=rec)
 
-    def add_link(self):
+    def add_product_by_link(self):
         Recordlink(parent=self)
 
     def configure_activity_indicator(self):
