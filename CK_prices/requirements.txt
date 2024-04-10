@@ -1,4 +1,5 @@
 auto-py-to-exe==2.42.0
+pyinstaller==6.0.0
 beautifulsoup4==4.11.1
 customtkinter==5.0.1
 Pillow==10.3.0

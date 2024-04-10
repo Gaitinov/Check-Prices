@@ -21,6 +21,7 @@ from modules.update import update_tray
 from modules.settings import Settings
 from modules.product_info_extractor import extract_product_info
 from modules.config import CustomEntry, DBPath
+from winotify import Notification
 
 
 config = configparser.ConfigParser()
@@ -446,6 +447,17 @@ class Application(ct.CTk):
             text=f"Проверка цен... ({self.checked_items}/{self.total_items})"
         )
 
+    def notifycheck(self):
+        try:
+            toast = Notification(
+                app_id="Check prices",
+                title="Откройте приложение",
+                msg="Проверка цен завершена",
+            )
+            toast.show()
+        except Exception as e:
+            print(f"Произошла ошибка: {e}")
+
     def update_logic(self):
         db_path = DBPath.get_or_init_db_path()
         logging.info("Update from the application: started")
@@ -574,6 +586,9 @@ class Application(ct.CTk):
 
         con.commit()
 
+        if self.is_in_tray:
+            self.notifycheck()
+
         if error_messages:
             tkinter.messagebox.showerror(
                 "Ошибки во время выполнения", "\n\n".join(error_messages)
@@ -685,7 +700,9 @@ class Products(ct.CTkToplevel):
         )
         btnSearch.grid(row=0, column=1, pady=5, padx=(1, 15))
 
-        self.add_button = ct.CTkButton(frm, text="Добавить", command=self.add_product_by_link)
+        self.add_button = ct.CTkButton(
+            frm, text="Добавить", command=self.add_product_by_link
+        )
         self.add_button.grid(row=0, column=4, padx=20, pady=5)
 
         frm.grid_columnconfigure(0, weight=1)
