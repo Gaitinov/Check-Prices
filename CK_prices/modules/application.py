@@ -33,7 +33,7 @@ min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 
 
 class Application(ct.CTk):
-    app_title = "Учёт цен"
+    app_title = "Check Prices"
     tray_price_check_thread = None
     stop_event = None
 
@@ -422,7 +422,9 @@ class Application(ct.CTk):
 
     def show_info(self):
         tkinter.messagebox.showinfo(
-            Application.app_title, "© Учёт цен, 2022 г.", parent=self
+            Application.app_title,
+            f"© Check Prices, 2024 г.\n\n" "Сделано Гайтиновым Мухарамом.",
+            parent=self,
         )
 
     def open_products_window(self):
@@ -604,7 +606,7 @@ class Application(ct.CTk):
 
 
 class Products(ct.CTkToplevel):
-    app_title = "Учёт цен"
+    app_title = "Check Prices"
 
     def __init__(self, parent=None):
         super().__init__()
@@ -626,8 +628,10 @@ class Products(ct.CTkToplevel):
         self.parent.load_data()
 
     def center_window(self):
+        window_width = 800
+        window_height = 300
         self.geometry(
-            f"800x300+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 300 // 2}"
+            f"{window_width}x{window_height}+{self.winfo_screenwidth() // 2 - window_width // 2}+{self.winfo_screenheight() // 2 - window_height // 2}"
         )
 
     def create_widgets(self):
@@ -881,5 +885,7 @@ class Products(ct.CTkToplevel):
 
     def show_info(self):
         tkinter.messagebox.showinfo(
-            Application.app_title, "© Учёт цен, 2022 г.", parent=self
+            Application.app_title,
+            "© Check Prices, 2024 г.\n\n" "Сделано Гайтиновым Мухарамом.",
+            parent=self,
         )

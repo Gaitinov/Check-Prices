@@ -49,8 +49,10 @@ class Settings(ct.CTkToplevel):
 
     def init_ui(self):
         self.title("Настройки")
+        window_width = 800
+        window_height = 530
         self.geometry(
-            f"800x530+{self.winfo_screenwidth() // 2 - 800 // 2}+{self.winfo_screenheight() // 2 - 530 // 2}"
+            f"{window_width}x{window_height}+{self.winfo_screenwidth() // 2 - window_width // 2}+{self.winfo_screenheight() // 2 - window_height // 2}"
         )
         self.configure(bg="#f0f0f0")
 
