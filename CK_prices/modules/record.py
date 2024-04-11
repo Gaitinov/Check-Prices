@@ -17,6 +17,7 @@ min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 class Record(ct.CTkToplevel):
     def __init__(self, parent=None, record={}):
         super().__init__()
+        self.withdraw()
         self.parent = parent
         self.create_widgets(record)
         self.title("Изменение записи" if record["id_record"] else "Добавление записи")
@@ -24,6 +25,7 @@ class Record(ct.CTkToplevel):
         self.transient(parent)
         self.focus_set()
         self.grab_set()
+        self.after(50, self.deiconify)
 
     def create_widgets(self, record):
         self.entry_menu = CustomEntry(self)
@@ -184,6 +186,7 @@ class Record(ct.CTkToplevel):
 class Recordtop(ct.CTkToplevel):
     def __init__(self, parent=None, record={}):
         super().__init__()
+        self.withdraw()
         self.parent = parent
         self.create_widgets(record)
         self.title("Изменение записи" if record["id_item"] else "Добавление записи")
@@ -191,6 +194,7 @@ class Recordtop(ct.CTkToplevel):
         self.transient(parent)
         self.focus_set()
         self.grab_set()
+        self.after(50, self.deiconify)
 
     def create_widgets(self, record):
         self.entry_menu = CustomEntry(self)
@@ -393,6 +397,7 @@ class Recordtop(ct.CTkToplevel):
 class Recordlink(ct.CTkToplevel):
     def __init__(self, parent=None):
         super().__init__()
+        self.withdraw()
         self.parent = parent
         self.create_widgets()
         self.title("Добавление товара")
@@ -400,6 +405,7 @@ class Recordlink(ct.CTkToplevel):
         self.transient(parent)
         self.focus_set()
         self.grab_set()
+        self.after(50, self.deiconify)
 
     def create_widgets(self):
         self.entry_menu = CustomEntry(self)

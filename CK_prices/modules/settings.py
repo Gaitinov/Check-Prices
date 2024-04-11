@@ -12,9 +12,11 @@ from modules.config import CustomEntry, DBPath
 class Settings(ct.CTkToplevel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.withdraw()
         self.enable_price_check_var = ct.StringVar(value="off")
         self.init_ui()
         self.load_current_value()
+        self.after(50, self.deiconify)
 
     def reload_aplication(self):
         new_args = sys.argv[:]

@@ -790,7 +790,7 @@ class Products(ct.CTkToplevel):
                 (f"%{search_str}%", f"%{search_str}%", f"%{search_str}%"),
             )
         else:
-            cur.execute("select * from items order by id_item;")
+            cur.execute("select * from items order by id_item DESC;")
         for rec in cur:
             self.trwPB.insert("", "end", text=rec[0], values=(rec[1], rec[2], rec[3]))
         cur.close()
