@@ -203,6 +203,7 @@ class Application(ct.CTk):
             lambda event, widget=entSearch: self.entry_menu.show(event, widget),
         )
         entSearch.bind("<Control-KeyPress>", lambda event: self.entry_menu.keys(event))
+        entSearch.bind("<Return>", lambda event: self.load_data())
         entSearch.grid(row=0, column=0, sticky="we")
         btnSearch = tkinter.ttk.Button(
             frm, image=self.search_image, command=self.load_data
@@ -699,6 +700,7 @@ class Products(ct.CTkToplevel):
         )
         entSearch.bind("<Control-KeyPress>", lambda event: self.entry_menu.keys(event))
         entSearch.grid(row=0, column=0, sticky="we")
+        entSearch.bind("<Return>", lambda event: self.load_data())
         btnSearch = tkinter.ttk.Button(
             frm, image=self.search_image, command=self.load_data
         )
