@@ -513,12 +513,6 @@ class Application(ct.CTk):
                         f"Не удалось получить данные с ozon:  {link[i]}."
                     )
                     continue
-                elif result == "webOutOfStock":
-                    item, information, price = (
-                        "Товара нет в наличии",
-                        "Информации нет",
-                        0,
-                    )
                 else:
                     item, information, price = result
 

@@ -330,13 +330,6 @@ class Recordtop(ct.CTkToplevel):
                     )
                     self.parent.after(0, self.parent.hide_activity)
                     return
-
-                elif result == "webOutOfStock":
-                    item, information, price = (
-                        "Товара нет в наличии",
-                        "Информации нет",
-                        0,
-                    )
                 else:
                     item, information, price = result
 
@@ -514,8 +507,6 @@ class Recordlink(ct.CTkToplevel):
                 )
                 self.parent.after(0, self.parent.hide_activity)
                 return
-            elif result == "webOutOfStock":
-                item, information, price = "Товара нет в наличии", "Информации нет", 0
             else:
                 item, information, price = result
         else:

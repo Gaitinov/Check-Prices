@@ -1,7 +1,9 @@
 import logging
 import configparser
 import requests
+import sqlite3
 from bs4 import BeautifulSoup as BS
+from modules.config import DBPath
 from modules.kaspidriver import setup_driver_kaspi
 from modules.ozondriver import setup_driver_ozon
 
@@ -146,7 +148,21 @@ def extract_info_ozon(url):
     try:
         html = setup_driver_ozon(url)
         if html == "webOutOfStock":
-            return "webOutOfStock"
+            price = 0
+            information = "Информации нет"
+            try:
+                db_path = DBPath.get_or_init_db_path()
+                with sqlite3.connect(db_path) as con:
+                    cur = con.cursor()
+                    cur.execute("SELECT item FROM items WHERE link=?", (url,))
+                    item = cur.fetchone()
+                    if item:
+                        return item[0], information, price
+                    else:
+                        return "Товара нет в наличии", information, price
+            except Exception as e:
+                logging.error(f"Database error: {e}")
+                return "Товара нет в наличии", information, price
 
         if html is None:
             logging.error("Failed to retrieve data from ozon, skip to next entry")

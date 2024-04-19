@@ -63,8 +63,6 @@ def update_tray():
             result = extract_product_info(link[i])
             if result is None:
                 continue
-            elif result == "webOutOfStock":
-                item, information, price = "Товара нет в наличии", "Информации нет", 0
             else:
                 item, information, price = result
         else:
