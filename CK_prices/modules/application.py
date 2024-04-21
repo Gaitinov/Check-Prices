@@ -454,8 +454,8 @@ class Application(ct.CTk):
         try:
             toast = Notification(
                 app_id="Check prices",
-                title="Откройте приложение",
-                msg="Проверка цен завершена",
+                title="Проверка цен завершена",
+                msg="Откройте приложение",
             )
             toast.show()
         except Exception as e:

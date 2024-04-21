@@ -18,7 +18,7 @@ min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 def notifyex():
     try:
         toast = Notification(
-            app_id="Check prices", title="Откройте приложение", msg="Цены изменились"
+            app_id="Check prices", title="Цены изменились", msg="Откройте приложение"
         )
         toast.show()
     except Exception as e:
