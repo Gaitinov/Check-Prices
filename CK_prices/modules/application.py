@@ -390,7 +390,7 @@ class Application(ct.CTk):
                     )
                 )
                 fig.update_layout(
-                    title=f"График изменения цен на товар: {item_name}",
+                    title=f"<a href='{value}'>{item_name}</a>",
                     xaxis_title="Время",
                     yaxis_title="Цена",
                 )
