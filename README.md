@@ -7,7 +7,7 @@
 Для настройки playwright для создания .exe, выполните следующие шаги:
 
 ```Batch
-set PLAYWRIGHT_BROWSERS_PATH=0
+$Env:PLAYWRIGHT_BROWSERS_PATH=0
 playwright install chromium
 ```
 Видео инструкция:
