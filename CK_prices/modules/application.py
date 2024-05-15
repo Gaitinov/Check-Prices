@@ -1,3 +1,4 @@
+import multiprocessing
 import tkinter
 import tkinter.ttk
 import logging
@@ -9,10 +10,8 @@ import webbrowser
 import os
 import configparser
 import plotly.graph_objects as go
-from pystray import MenuItem as item
-import pystray
+import rumps
 import threading
-from PIL import Image
 from datetime import datetime
 from modules.record import Record
 from modules.record import Recordtop
@@ -21,8 +20,15 @@ from modules.update import update_tray
 from modules.settings import Settings
 from modules.product_info_extractor import extract_product_info
 from modules.config import CustomEntry, DBPath
-from winotify import Notification
+from AppKit import NSBundle, NSApplication, NSApp
 
+# Hide the dock icon but keep the status item
+def hide_dock_icon():
+    NSApp.setActivationPolicy_(1)  # 1 corresponds to NSApplicationActivationPolicyAccessory
+
+# Restore the dock icon
+def show_dock_icon():
+    NSApp.setActivationPolicy_(0)  # 0 corresponds to NSApplicationActivationPolicyRegular
 
 config = configparser.ConfigParser()
 config.read("settings.ini")
@@ -31,11 +37,29 @@ check_price_interval = config.getint("DEFAULT", "check_price_interval")
 price_range_for_save_to_db = config.getint("DEFAULT", "price_range_for_save_to_db")
 min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 
+def run_tray_app(exit_event, quit_event):
+    class TrayApp(rumps.App):
+        def __init__(self):
+            super(TrayApp, self).__init__("Check Price", menu=[rumps.MenuItem("Развернуть", self.on_expand), rumps.MenuItem("Выйти", self.on_quit)], quit_button=None)
+            self.icon = os.path.abspath("images/icon.ico")
+
+        def on_expand(self, _):
+            exit_event.set()
+
+        def on_quit(self, _):
+            quit_event.set()
+            rumps.quit_application()
+
+    tray_app = TrayApp()
+    tray_app.run()
 
 class Application(ct.CTk):
     app_title = "Check Prices"
     tray_price_check_thread = None
     stop_event = None
+    tray_process = None
+    exit_event = None
+    quit_event = None
 
     logging.info("Logging started")
 
@@ -63,16 +87,13 @@ class Application(ct.CTk):
             window_height = 400
             position_right = int(self.winfo_screenwidth() / 2 - window_width / 2)
             position_down = int(self.winfo_screenheight() / 2 - window_height / 2)
-            self.geometry(
-                f"{window_width}x{window_height}+{position_right}+{position_down}"
-            )
+            self.geometry(f"{window_width}x{window_height}+{position_right}+{position_down}")
             self.attributes("-topmost", True)
-            self.after_idle(
-                self.attributes, "-topmost", False
-            )  # Затем возвращаем обычный режим
+            self.after_idle(self.attributes, "-topmost", False)
 
             self.protocol("WM_DELETE_WINDOW", self.setup_for_tray)
             self.check_auto_close()
+            self.after(100, self.check_exit_event)
             self.mainloop()
         except Exception as e:
             logging.error("Error: %s", e)
@@ -80,7 +101,6 @@ class Application(ct.CTk):
     def start_tray_price_check_thread(self):
         try:
             print("Thread started")
-            threadupdate = None
             while not self.stop_event.is_set():
                 self.stop_event.wait(check_price_interval)
                 if self.stop_event.is_set():
@@ -88,61 +108,71 @@ class Application(ct.CTk):
                     print("Thread is broken")
                     break
 
-                if threadupdate is None or not threadupdate.is_alive():
-                    threadupdate = threading.Thread(target=update_tray)
-                    threadupdate.daemon = True
-                    threadupdate.start()
-                    logging.info("Thread started")
+                threadupdate = threading.Thread(target=update_tray)
+                threadupdate.daemon = True
+                threadupdate.start()
+                threadupdate.join()
+                logging.info("Thread started")
+        except Exception as e:
+            logging.error("Error: %s", e)
 
+    def restore_application_window(self):
+        try:
+            print("Thread stopped")
+            self.stop_event.set()
+            self.deiconify()
+            if self.tray_process:
+                print("Stopping tray app")
+                self.tray_process.terminate()
+                self.tray_process.join()
+                self.tray_process = None
+            self.load_data()
+            self.lift()
+            self.focus_force()
+            self.is_in_tray = False
+            self.after(0, show_dock_icon)
+            logging.info("The application is out of the tray")
         except Exception as e:
             logging.error("Error: %s", e)
 
     def setup_for_tray(self):
         logging.info("The application moved to the tray")
 
-        def restore_application_window():
-            try:
-                print("Thread stopped")
-                self.stop_event.set()
-                self.deiconify()
-                self.icon.stop()
-                self.load_data()
-                self.lift()  # Поднимаем окно на передний план
-                self.focus_force()  # Принудительно устанавливаем фокус на окне
-                self.is_in_tray = False
-                self.after(0, self.update_activity_indicator)
-                logging.info("The application is out of the tray")
-            except Exception as e:
-                logging.error("Error: %s", e)
-
-        def exit_application(icon, item):
-            os._exit(0)
-
         try:
-            if (
-                self.tray_price_check_thread is None
-                or not self.tray_price_check_thread.is_alive()
-            ):
+            if not self.tray_price_check_thread or not self.tray_price_check_thread.is_alive():
                 self.stop_event = threading.Event()
-                self.tray_price_check_thread = threading.Thread(
-                    target=self.start_tray_price_check_thread
-                )
+                self.tray_price_check_thread = threading.Thread(target=self.start_tray_price_check_thread)
                 self.tray_price_check_thread.start()
+
             self.is_in_tray = True
             self.withdraw()
-            image = Image.open("images/icon.ico")
-            self.icon = pystray.Icon(
-                "name",
-                image,
-                "Check price",
-                menu=pystray.Menu(
-                    item("Развернуть", restore_application_window, default=True),
-                    item("Выйти", exit_application),
-                ),
-            )
-            self.icon.run()
+            self.after(0, hide_dock_icon)
+
+            manager = multiprocessing.Manager()
+            self.exit_event = manager.Event()
+            self.quit_event = manager.Event()
+
+            self.tray_process = multiprocessing.Process(target=run_tray_app, args=(self.exit_event, self.quit_event))
+            self.tray_process.start()
         except Exception as e:
             logging.error("Error: %s", e)
+
+    def check_exit_event(self):
+        if self.quit_event and self.quit_event.is_set():
+            self.quit_application()
+        elif self.exit_event and self.exit_event.is_set():
+            self.exit_event.clear()
+            self.restore_application_window()
+        self.after(100, self.check_exit_event)
+
+    def quit_application(self):
+        print("Exiting application")
+        if self.tray_process:
+            self.tray_process.terminate()
+            self.tray_process.join()
+        self.destroy()
+        os._exit(0)
+
 
     def create_widgets(self):
         self.add_image = tkinter.PhotoImage(file=r"images/add.gif")
@@ -191,7 +221,7 @@ class Application(ct.CTk):
         helpmenu = tkinter.Menu(mainmenu, tearoff=False)
         helpmenu.add_command(label="О программе...", command=self.show_info)
         mainmenu.add_cascade(label="Справка", menu=helpmenu)
-        mainmenu.add_command(label="Настройки", command=self.open_settings)
+        helpmenu.add_command(label="Настройки", command=self.open_settings)
 
         self.search = tkinter.StringVar()
         self.search.set("")
@@ -451,15 +481,7 @@ class Application(ct.CTk):
         )
 
     def notifycheck(self):
-        try:
-            toast = Notification(
-                app_id="Check prices",
-                title="Проверка цен завершена",
-                msg="Откройте приложение",
-            )
-            toast.show()
-        except Exception as e:
-            print(f"Произошла ошибка: {e}")
+        pass
 
     def update_logic(self):
         db_path = DBPath.get_or_init_db_path()

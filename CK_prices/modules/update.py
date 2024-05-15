@@ -2,7 +2,6 @@ import logging
 import configparser
 from datetime import datetime
 import sqlite3
-from winotify import Notification
 from modules.config import DBPath
 from modules.product_info_extractor import extract_product_info
 
@@ -16,13 +15,7 @@ min_reviews_count = config.getint("DEFAULT", "min_reviews_count")
 
 
 def notifyex():
-    try:
-        toast = Notification(
-            app_id="Check prices", title="Цены изменились", msg="Откройте приложение"
-        )
-        toast.show()
-    except Exception as e:
-        print(f"Произошла ошибка: {e}")
+    pass
 
 
 def update_tray():
