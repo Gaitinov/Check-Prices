@@ -2,6 +2,7 @@ import ctypes
 import tkinter
 import os
 import sys
+import logging
 
 
 class CustomEntry:
@@ -70,3 +71,14 @@ class DBPath:
             cls._db_path = os.path.join(db_dir, "tab.db")
 
         return cls._db_path
+
+
+class Instruction:
+    @staticmethod
+    def open_manual():
+        try:
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            manual_path = os.path.join(script_dir, "../instruction.pdf")
+            os.startfile(manual_path)
+        except Exception as e:
+            logging.error("Error: %s", e)

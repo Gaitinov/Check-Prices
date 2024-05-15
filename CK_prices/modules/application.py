@@ -20,7 +20,7 @@ from modules.record import Recordlink
 from modules.update import update_tray
 from modules.settings import Settings
 from modules.product_info_extractor import extract_product_info
-from modules.config import CustomEntry, DBPath
+from modules.config import CustomEntry, DBPath, Instruction
 from winotify import Notification
 
 
@@ -181,7 +181,7 @@ class Application(ct.CTk):
         self.editmenu.add_separator()
         self.editmenu.add_command(
             label="Удалить",
-            accelerator="F8",
+            accelerator="Delete",
             image=self.delete_image,
             compound=tkinter.LEFT,
             command=self.delete_record,
@@ -190,6 +190,7 @@ class Application(ct.CTk):
 
         helpmenu = tkinter.Menu(mainmenu, tearoff=False)
         helpmenu.add_command(label="О программе...", command=self.show_info)
+        helpmenu.add_command(label="Инструкция", command=Instruction.open_manual)
         mainmenu.add_cascade(label="Справка", menu=helpmenu)
         mainmenu.add_command(label="Настройки", command=self.open_settings)
 
@@ -248,7 +249,7 @@ class Application(ct.CTk):
         self.bind_all("<KeyPress-Insert>", lambda evt: self.editmenu.invoke(0))
         self.bind_all("<KeyPress-F2>", lambda evt: self.editmenu.invoke(1))
         self.bind_all("<KeyPress-F5>", lambda evt: self.editmenu.invoke(2))
-        self.bind_all("<KeyPress-F8>", lambda evt: self.editmenu.invoke(4))
+        self.bind_all("<KeyPress-Delete>", lambda evt: self.editmenu.invoke(4))
 
         self.bind("<Destroy>", self.close_database_connection)
 
@@ -651,14 +652,14 @@ class Products(ct.CTkToplevel):
         )
         self.editmenu.add_command(
             label="Добавить товар по ссылке",
-            accelerator="F2",
+            accelerator="F1",
             image=self.addlink_image,
             compound=tkinter.LEFT,
             command=self.add_product_by_link,
         )
         self.editmenu.add_command(
             label="Изменить",
-            accelerator="F5",
+            accelerator="F2",
             image=self.edit_image,
             compound=tkinter.LEFT,
             command=self.edit_record,
@@ -666,7 +667,7 @@ class Products(ct.CTkToplevel):
         self.editmenu.add_separator()
         self.editmenu.add_command(
             label="Удалить",
-            accelerator="F8",
+            accelerator="Delete",
             image=self.delete_image,
             compound=tkinter.LEFT,
             command=self.delete_record,
@@ -675,6 +676,7 @@ class Products(ct.CTkToplevel):
 
         helpmenu = tkinter.Menu(mainmenu, tearoff=False)
         helpmenu.add_command(label="О программе...", command=self.show_info)
+        helpmenu.add_command(label="Инструкция", command=Instruction.open_manual)
         mainmenu.add_cascade(label="Справка", menu=helpmenu)
 
         self.search = tkinter.StringVar()
@@ -736,9 +738,9 @@ class Products(ct.CTkToplevel):
         sgp.grid(row=2, column=1, sticky="ns")
 
         self.bind_all("<KeyPress-Insert>", lambda evt: self.editmenu.invoke(0))
-        self.bind_all("<KeyPress-F2>", lambda evt: self.editmenu.invoke(1))
-        self.bind_all("<KeyPress-F5>", lambda evt: self.editmenu.invoke(2))
-        self.bind_all("<KeyPress-F8>", lambda evt: self.editmenu.invoke(4))
+        self.bind_all("<KeyPress-F1>", lambda evt: self.editmenu.invoke(1))
+        self.bind_all("<KeyPress-F2>", lambda evt: self.editmenu.invoke(2))
+        self.bind_all("<KeyPress-Delete>", lambda evt: self.editmenu.invoke(4))
 
         self.bind("<Destroy>", self.close_database_connection)
 
