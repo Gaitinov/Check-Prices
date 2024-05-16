@@ -15,6 +15,7 @@ class Settings(ct.CTkToplevel):
         self.withdraw()
         self.enable_price_check_var = ct.StringVar(value="off")
         self.init_ui()
+        self.iconbitmap(r"images/icon.ico")
         self.load_current_value()
         self.after(50, self.deiconify)
 
