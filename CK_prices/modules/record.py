@@ -20,6 +20,7 @@ class Record(ct.CTkToplevel):
         self.withdraw()
         self.parent = parent
         self.create_widgets(record)
+        self.iconbitmap(r"images/icon.ico")
         self.title("Изменение записи" if record["id_record"] else "Добавление записи")
         self.resizable(False, False)
         self.transient(parent)
@@ -188,6 +189,7 @@ class Recordtop(ct.CTkToplevel):
         super().__init__()
         self.withdraw()
         self.parent = parent
+        self.iconbitmap(r"images/icon.ico")
         self.create_widgets(record)
         self.title("Изменение записи" if record["id_item"] else "Добавление записи")
         self.resizable(False, False)
@@ -392,6 +394,7 @@ class Recordlink(ct.CTkToplevel):
         super().__init__()
         self.withdraw()
         self.parent = parent
+        self.iconbitmap(r"images/icon.ico")
         self.create_widgets()
         self.title("Добавление товара")
         self.resizable(False, False)
