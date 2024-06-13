@@ -46,8 +46,10 @@ def extract_info_flip(url):
             price = int(meta_tag["content"])
         except:
             try:
-                price_text = html.find("span", class_="text_att").text
-                price = int(price_text.replace("₸", "").strip())
+                price_block = html.find("div", class_="price-block-price")
+                price_text = price_block.get_text(strip=True)
+                first_price_text = price_text.split("₸")[0].strip()
+                price = int(first_price_text.replace(" ", ""))
             except:
                 price = 0
                 information = "Товара нет в наличии"
@@ -66,10 +68,8 @@ def extract_info_technodom(url):
         item = html.find("h1").text
         information = "Для дополнительной информации перейдите на страницу товара"
         try:
-            price_text = html.find(
-                "p",
-                class_="Typography ProductPricesVariantB_accented__n2rtH Typography__Heading Typography__Heading_H1",
-            ).text
+            price_block = html.find("div", {"data-testid": "product-price"})
+            price_text = price_block.find("p").text
             price_text = price_text.replace("\xa0", "").replace("₸", "").strip()
             price = int(price_text.replace(" ", ""))
         except:
