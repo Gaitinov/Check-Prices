@@ -9,11 +9,12 @@ def setup_driver_ozon(url, max_attempts=3):
         try:
             logging.info("Attempt from Ozon %s: Driver launched", attempt + 1)
             with sync_playwright() as playwright:
-                browser = playwright.chromium.launch(headless=True)
+                browser = playwright.chromium.launch(headless=False)
                 context = browser.new_context()
                 page = context.new_page()
                 page.goto(url, timeout=45000)
                 page.wait_for_load_state("networkidle")
+                page.wait_for_timeout(10000)
 
                 if page.is_visible("button#reload-button"):
                     logging.info("Reload button is visible, clicking.")
