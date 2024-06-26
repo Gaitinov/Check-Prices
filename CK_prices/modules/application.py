@@ -298,6 +298,34 @@ class Application(ct.CTk):
     def close_database_connection(self, evt):
         self.con.close()
 
+    def get_last_price(self, link, current_time):
+        cur = self.con.cursor()
+        cur.execute(
+            """
+            SELECT price FROM prices
+            WHERE link = ? AND time < ?
+            ORDER BY time DESC LIMIT 1
+            """, (link, current_time)
+        )
+        last_price_record = cur.fetchone()
+        return last_price_record[0] if last_price_record else None
+
+    def get_price_change_status(self, last_price, current_price):
+        try:
+            if last_price is not None:
+                last_price = float(last_price)
+            current_price = float(current_price)
+        except ValueError as e:
+            return 'same'
+
+        if last_price is None:
+            return 'same'
+        if current_price > last_price:
+            return 'up'
+        elif current_price < last_price:
+            return 'down'
+        return 'same'
+
     def load_data(self):
         self.trwPB.delete(*self.trwPB.get_children())
         cur = self.con.cursor()
@@ -325,14 +353,35 @@ class Application(ct.CTk):
             )
         else:
             cur.execute("SELECT * FROM prices ORDER BY id_record DESC;")
+
+        painted_links = {}
         for rec in cur:
+            id_record = rec[0]
+            id_item = rec[1]
+            item = rec[2]
+            price = rec[3]
+            time = rec[4]
+            link = rec[5]
+            information = rec[6]
+            if link not in painted_links:
+                last_price = self.get_last_price(link, time)
+                tag = self.get_price_change_status(last_price, price)
+                painted_links[link] = tag
+            else:
+                tag = 'same'
+
             self.trwPB.insert(
                 "",
                 "end",
-                text=rec[0],
-                values=(rec[1], rec[2], rec[3], rec[4], rec[5], rec[6]),
+                text=id_record,
+                values=(id_item, item, price, time, link, information),
+                tags=(tag,)
             )
         cur.close()
+
+        self.trwPB.tag_configure('up', background='lightpink')
+        self.trwPB.tag_configure('down', background='palegreen')
+        self.trwPB.tag_configure('same', background='white')
 
     def add_record(self):
         rec = {
