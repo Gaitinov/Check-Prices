@@ -183,31 +183,22 @@ class Application(ct.CTk):
             """, (link, current_time)
         )
         last_price_record = cur.fetchone()
-        print(
-            f"Executing SQL: SELECT price FROM prices WHERE link = '{link}' AND time < '{current_time}' ORDER BY time DESC LIMIT 1 OFFSET 1")
-        print(f"Last price record: {last_price_record}")
         return last_price_record[0] if last_price_record else None
 
     def get_price_change_status(self, last_price, current_price):
         try:
-            print(f"Last price: {last_price}, Current price: {current_price}")
             if last_price is not None:
                 last_price = float(last_price)
             current_price = float(current_price)
         except ValueError as e:
-            print(f"Invalid price format: {e}")
             return 'same'
 
         if last_price is None:
-            print("No last price")
             return 'same'
         if current_price > last_price:
-            print("Price is up")
             return 'up'
         elif current_price < last_price:
-            print("Price is down")
             return 'down'
-        print("Price is same")
         return 'same'
 
     def create_widgets(self):
@@ -616,22 +607,18 @@ class Application(ct.CTk):
                 lastrecordid = cur.execute(
                     f"select id_record from prices WHERE link = '{link[i]}' AND time = '{lastrrecordtime}'"
                 ).fetchone()[0]
-                print(f"Last record ID: {lastrecordid}")
 
                 lastprice = cur.execute(
                     f"select price from prices WHERE id_record = '{lastrecordid}'"
                 ).fetchone()[0]
-                print(f"Last price: {lastprice}")
 
                 if lastprice != price:
-                    print(f"Price change detected: {lastprice} -> {price}")
                     id_item = str(
                         cur.execute(
                             f"select id_item from items WHERE link = '{link[i]}'"
                         ).fetchone()[0]
                     )
                     price_interval_by_product = lastprice - price
-                    print(f"Price interval by product: {price_interval_by_product}")
                     if price_interval_by_product < 0:
                         price_interval_by_product = price_interval_by_product * -1
                     if price_interval_by_product > price_interval:
