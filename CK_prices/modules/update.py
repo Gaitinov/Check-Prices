@@ -36,8 +36,11 @@ def update_tray():
     link = [x[0] for x in link]
     link_count = len(link)
     price_interval = 0
+    check_counter = 0
 
     for i in range(link_count):
+        check_counter += 1
+        logging.info(f"Starting check #{check_counter}")
         if "flip" in link[i]:
             item, information, price = extract_product_info(link[i])
 
@@ -50,11 +53,13 @@ def update_tray():
                 continue
             if result[0] == "skip":
                 logging.warning(
-                    f"There is no price for the product Kaspi:{link[i]}. Skip."
+                    f"Check #{check_counter}: There is no price for the product Kaspi:{link[i]}. Skip."
                 )
                 continue
             if result[0] == "second_check":
-                logging.warning(f"Data not updated. Skip: {link[i]}")
+                logging.warning(
+                    f"Check #{check_counter}: Data not updated. Skip: {link[i]}"
+                )
                 continue
 
             item, information, price = result
@@ -132,6 +137,6 @@ def update_tray():
             notifyex()
             print("Уведомление")
         con.commit()
-        logging.info("Update from tray: finished")
+        logging.info(f"Update from tray: finished (Total checks: {check_counter})")
     except Exception as e:
-        logging.error(f"Error: {e}")
+        logging.error(f"Error after {check_counter} checks: {e}")

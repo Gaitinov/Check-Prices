@@ -191,6 +191,8 @@ class Application(ct.CTk):
         helpmenu = tkinter.Menu(mainmenu, tearoff=False)
         helpmenu.add_command(label="О программе...", command=self.show_info)
         helpmenu.add_command(label="Инструкция", command=Instruction.open_manual)
+        helpmenu.add_command(label="Журнал", command=self.open_logs)
+        helpmenu.add_command(label="Открыть папку с БД", command=self.open_folder)
         mainmenu.add_cascade(label="Справка", menu=helpmenu)
         mainmenu.add_command(label="Настройки", command=self.open_settings)
 
@@ -305,7 +307,8 @@ class Application(ct.CTk):
             SELECT price FROM prices
             WHERE link = ? AND time < ?
             ORDER BY time DESC LIMIT 1
-            """, (link, current_time)
+            """,
+            (link, current_time),
         )
         last_price_record = cur.fetchone()
         return last_price_record[0] if last_price_record else None
@@ -316,15 +319,15 @@ class Application(ct.CTk):
                 last_price = float(last_price)
             current_price = float(current_price)
         except ValueError as e:
-            return 'same'
+            return "same"
 
         if last_price is None:
-            return 'same'
+            return "same"
         if current_price > last_price:
-            return 'up'
+            return "up"
         elif current_price < last_price:
-            return 'down'
-        return 'same'
+            return "down"
+        return "same"
 
     def load_data(self):
         self.trwPB.delete(*self.trwPB.get_children())
@@ -368,20 +371,20 @@ class Application(ct.CTk):
                 tag = self.get_price_change_status(last_price, price)
                 painted_links[link] = tag
             else:
-                tag = 'same'
+                tag = "same"
 
             self.trwPB.insert(
                 "",
                 "end",
                 text=id_record,
                 values=(id_item, item, price, time, link, information),
-                tags=(tag,)
+                tags=(tag,),
             )
         cur.close()
 
-        self.trwPB.tag_configure('up', background='lightpink')
-        self.trwPB.tag_configure('down', background='palegreen')
-        self.trwPB.tag_configure('same', background='white')
+        self.trwPB.tag_configure("up", background="lightpink")
+        self.trwPB.tag_configure("down", background="palegreen")
+        self.trwPB.tag_configure("same", background="white")
 
     def add_record(self):
         rec = {
@@ -485,6 +488,22 @@ class Application(ct.CTk):
     def open_settings(self):
         settings = Settings()
         settings.mainloop()
+
+    def open_logs(self):
+        try:
+            os.startfile("Logs.log")
+        except Exception as e:
+            tkinter.messagebox.showerror(
+                "Ошибка", "Не удалось открыть файл журнала", parent=self
+            )
+
+    def open_folder(self):
+        try:
+            os.startfile(os.path.dirname(DBPath.get_or_init_db_path()))
+        except Exception as e:
+            tkinter.messagebox.showerror(
+                "Ошибка", "Не удалось открыть папку с базой данных", parent=self
+            )
 
     def update(self):
         self.update_button.configure(text="Проверка...", state="disabled")
