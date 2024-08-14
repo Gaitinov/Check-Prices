@@ -179,6 +179,8 @@ def extract_info_ozon(url):
         price_block = soup.find(attrs={"data-widget": "webSale"})
         price_text = price_block.get_text().strip()
         price_text = price_text.split("₸")[0]
+        price_text = price_text.split(",")[0]
+        price_text = price_text.split("₽")[0]
         price = int("".join(filter(str.isdigit, price_text)))
     except:
         price = 0

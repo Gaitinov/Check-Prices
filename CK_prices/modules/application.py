@@ -323,6 +323,8 @@ class Application(ct.CTk):
 
         if last_price is None:
             return "same"
+        if last_price == 0 and current_price > 0:
+            return "back_in_stock"
         if current_price > last_price:
             return "up"
         elif current_price < last_price:
@@ -385,6 +387,7 @@ class Application(ct.CTk):
         self.trwPB.tag_configure("up", background="lightpink")
         self.trwPB.tag_configure("down", background="palegreen")
         self.trwPB.tag_configure("same", background="white")
+        self.trwPB.tag_configure("back_in_stock", background="lightblue")
 
     def add_record(self):
         rec = {
