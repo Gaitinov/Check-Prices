@@ -325,6 +325,8 @@ class Application(ct.CTk):
             return "same"
         if last_price == 0 and current_price > 0:
             return "back_in_stock"
+        if last_price > 0 and current_price == 0:
+            return "back_in_stock"
         if current_price > last_price:
             return "up"
         elif current_price < last_price:
