@@ -9,11 +9,13 @@ def setup_driver_ozon(url, max_attempts=3):
         try:
             logging.info("Attempt from Ozon %s: Driver launched", attempt + 1)
             with sync_playwright() as playwright:
-                browser = playwright.chromium.launch(headless=True,
-                                                     args=["--disable-blink-features=AutomationControlled"])
+                browser = playwright.chromium.launch(
+                    headless=True,
+                    args=["--disable-blink-features=AutomationControlled"],
+                )
                 context = browser.new_context(
                     viewport={"width": 1280, "height": 1024},
-                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
                 )
                 page = context.new_page()
                 page.goto(url, timeout=45000)

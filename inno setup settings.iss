@@ -25,7 +25,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 OutputDir=C:\Users\Shorek\Desktop
 OutputBaseFilename=Check Prices
-SetupIconFile=C:\Users\Shorek\Desktop\Check-Prices\CK_prices\venv\Scripts\output\CheckPrices\images\icon.ico
+SetupIconFile=C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\images\icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -40,10 +40,10 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
 
 [Files]
-Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\venv\Scripts\output\CheckPrices\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\venv\Scripts\output\CheckPrices\_internal\*"; DestDir: "{app}\_internal"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\venv\Scripts\output\CheckPrices\images\*"; DestDir: "{app}\images"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\venv\Scripts\output\CheckPrices\settings.ini"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\_internal\*"; DestDir: "{app}\_internal"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\images\*"; DestDir: "{app}\images"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Shorek\Desktop\Check-Prices\CK_prices\output\CheckPrices\settings.ini"; DestDir: "{app}"; Flags: ignoreversion
 
 [Registry]
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueType: string; ValueName: "{#MyAppAssocKey}"; ValueData: ""; Flags: uninsdeletevalue

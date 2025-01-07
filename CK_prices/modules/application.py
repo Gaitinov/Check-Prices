@@ -13,7 +13,7 @@ from pystray import MenuItem as item
 import pystray
 import threading
 from PIL import Image
-from datetime import datetime
+from datetime import datetime, timedelta
 from modules.record import Record
 from modules.record import Recordtop
 from modules.record import Recordlink
@@ -145,6 +145,25 @@ class Application(ct.CTk):
             logging.error("Error: %s", e)
 
     def create_widgets(self):
+
+        self.configure(bg="#f0f0f0")
+
+        style = tkinter.ttk.Style()
+        style.configure(
+            "Treeview",
+            background="white",
+            foreground="black",
+            fieldbackground="white",
+            rowheight=25,
+        )
+        style.configure(
+            "Treeview.Heading",
+            font=("Helvetica", 10, "bold"),
+            background="#f2f2f2",
+            foreground="#333333",
+        )
+        style.map("Treeview", background=[("selected", "#0078D7")])
+
         self.add_image = tkinter.PhotoImage(file=r"images/add.gif")
         self.edit_image = tkinter.PhotoImage(file=r"images/edit.gif")
         self.graph_image = tkinter.PhotoImage(file=r"images/graph.png")
@@ -300,18 +319,50 @@ class Application(ct.CTk):
     def close_database_connection(self, evt):
         self.con.close()
 
-    def get_last_price(self, link, current_time):
-        cur = self.con.cursor()
-        cur.execute(
-            """
-            SELECT price FROM prices
-            WHERE link = ? AND time < ?
-            ORDER BY time DESC LIMIT 1
-            """,
-            (link, current_time),
+    def get_last_price(self, id_item, current_time):
+        logging.info(
+            f"Fetching last price for item id_item={id_item}, current record time={current_time}"
         )
-        last_price_record = cur.fetchone()
-        return last_price_record[0] if last_price_record else None
+
+        try:
+            cur = self.con.cursor()
+            cur.execute(
+                "SELECT price, time FROM prices WHERE id_item = ? ORDER BY time DESC",
+                (id_item,),
+            )
+            all_records = cur.fetchall()
+            logging.info(f"All records for id_item={id_item}: {all_records}")
+
+            current_time_obj = datetime.strptime(current_time, "%m/%d/%Y %H:%M:%S")
+            logging.info(f"Parsed current time: {current_time_obj}")
+            last_valid_price = None
+
+            for record in all_records:
+                price, record_time = record
+                record_time_obj = datetime.strptime(record_time, "%m/%d/%Y %H:%M:%S")
+                logging.info(f"Record time: {record_time_obj}, Price: {price}")
+
+                if record_time_obj == current_time_obj:
+                    continue
+
+                if record_time_obj < current_time_obj:
+                    last_valid_price = price
+                    break
+
+            if last_valid_price is not None:
+                logging.info(
+                    f"Last valid price for id_item={id_item}: {last_valid_price}"
+                )
+                return last_valid_price
+            else:
+                logging.warning(
+                    f"No previous record found for id_item={id_item} with time < {current_time}"
+                )
+                return None
+
+        except Exception as e:
+            logging.error(f"Error in get_last_price for id_item={id_item}: {e}")
+            return None
 
     def get_price_change_status(self, last_price, current_price):
         try:
@@ -340,15 +391,15 @@ class Application(ct.CTk):
         if search_str:
             cur.execute(
                 """
-                    SELECT * FROM prices
-                    WHERE id_item LIKE ?
-                       OR item LIKE ?
-                       OR price LIKE ?
-                       OR time LIKE ?
-                       OR link LIKE ?
-                       OR information LIKE ?
-                    ORDER BY id_record DESC;
-                    """,
+                SELECT * FROM prices
+                WHERE id_item LIKE ?
+                   OR item LIKE ?
+                   OR price LIKE ?
+                   OR time LIKE ?
+                   OR link LIKE ?
+                   OR information LIKE ?
+                ORDER BY id_record DESC;
+                """,
                 (
                     f"%{search_str}%",
                     f"%{search_str}%",
@@ -361,7 +412,7 @@ class Application(ct.CTk):
         else:
             cur.execute("SELECT * FROM prices ORDER BY id_record DESC;")
 
-        painted_links = {}
+        last_items = {}
         for rec in cur:
             id_record = rec[0]
             id_item = rec[1]
@@ -370,10 +421,13 @@ class Application(ct.CTk):
             time = rec[4]
             link = rec[5]
             information = rec[6]
-            if link not in painted_links:
-                last_price = self.get_last_price(link, time)
+            if id_item not in last_items:
+                last_price = self.get_last_price(id_item, time)
+                print(f"Last price for id_item={id_item}: {last_price}")
+                print(f"Current price for id_item={id_item}: {price}")
                 tag = self.get_price_change_status(last_price, price)
-                painted_links[link] = tag
+                print(f"Tag for id_item={id_item}: {tag}")
+                last_items[id_item] = tag
             else:
                 tag = "same"
 
@@ -745,6 +799,14 @@ class Products(ct.CTkToplevel):
             compound=tkinter.LEFT,
             command=self.delete_record,
         )
+        self.editmenu.add_separator()
+
+        self.editmenu.add_command(
+            label="Не обновлялись > месяца",
+            image=self.search_image,
+            compound=tkinter.LEFT,
+            command=self.show_not_updated_items,
+        )
         mainmenu.add_cascade(label="Правка", menu=self.editmenu)
 
         helpmenu = tkinter.Menu(mainmenu, tearoff=False)
@@ -839,6 +901,164 @@ class Products(ct.CTkToplevel):
         self.load_data()
 
         self.grab_set()
+
+    def show_not_updated_items(self):
+        cur = self.con.cursor()
+        one_month_ago = datetime.now() - timedelta(days=30)
+        one_month_ago_str = one_month_ago.strftime("%m/%d/%Y %H:%M:%S")
+
+        cur.execute(
+            """
+            WITH LatestRecords AS (
+                SELECT 
+                    p1.id_item,
+                    p1.item,
+                    p1.time as last_update,
+                    p1.link
+                FROM prices p1
+                WHERE p1.time = (
+                    SELECT MAX(p2.time)
+                    FROM prices p2
+                    WHERE p2.item = p1.item
+                )
+            )
+            SELECT 
+                id_item,
+                item,
+                last_update,
+                link
+            FROM LatestRecords
+            WHERE last_update < ?
+            ORDER BY last_update DESC
+        """,
+            (one_month_ago_str,),
+        )
+
+        not_updated_items = cur.fetchall()
+        cur.close()
+
+        if not not_updated_items:
+            tkinter.messagebox.showinfo(
+                title="Информация",
+                message="Все товары обновлены в течение последнего месяца.",
+                parent=self,
+            )
+            return
+
+        window = tkinter.Toplevel(self)
+        window.title("Товары, не обновлявшиеся более месяца")
+        window.state("zoomed")
+
+        window.configure(bg="#f0f0f0")
+
+        main_container = tkinter.Frame(window, bg="#f0f0f0")
+        main_container.pack(fill=tkinter.BOTH, expand=True, padx=20, pady=20)
+
+        header = tkinter.Label(
+            master=main_container,
+            text="Товары, не обновлявшиеся более месяца",
+            font=("Helvetica", 18, "bold"),
+            bg="#f0f0f0",
+            fg="#333333",
+        )
+        header.pack(pady=15)
+
+
+        table_container = tkinter.Frame(
+            main_container,
+            bg="white",
+            highlightbackground="#ddd",
+            highlightthickness=1,
+            bd=0,
+        )
+        table_container.pack(fill=tkinter.BOTH, expand=True, pady=(0, 15))
+
+        frame = tkinter.Frame(table_container)
+        frame.pack(fill=tkinter.BOTH, expand=True, padx=2, pady=2)
+
+        y_scrollbar = tkinter.Scrollbar(frame)
+        y_scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
+
+        x_scrollbar = tkinter.Scrollbar(frame, orient=tkinter.HORIZONTAL)
+        x_scrollbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
+
+        tree = tkinter.ttk.Treeview(
+            master=frame,
+            columns=("ID", "Товар", "Последнее обновление", "Ссылка"),
+            show="headings",
+            yscrollcommand=y_scrollbar.set,
+            xscrollcommand=x_scrollbar.set,
+        )
+
+        y_scrollbar.config(command=tree.yview)
+        x_scrollbar.config(command=tree.xview)
+
+        tree.heading("ID", text="ID")
+        tree.heading("Товар", text="Товар")
+        tree.heading("Последнее обновление", text="Последнее обновление")
+        tree.heading("Ссылка", text="Ссылка")
+
+        tree.column("ID", width=50, anchor="center")
+        tree.column("Товар", width=500, anchor="w")
+        tree.column("Последнее обновление", width=200, anchor="center")
+        tree.column("Ссылка", width=300, anchor="w")
+
+        tree.tag_configure("oddrow", background="#f9f9f9")
+        tree.tag_configure("evenrow", background="white")
+
+        tree.pack(fill=tkinter.BOTH, expand=True)
+
+        for idx, (id_item, item_name, last_update_str, link) in enumerate(
+            not_updated_items
+        ):
+            try:
+                item_name = item_name.split("\n")[0].strip()
+                tree.insert(
+                    "",
+                    tkinter.END,
+                    values=(id_item, item_name, last_update_str, link),
+                    tags=("evenrow" if idx % 2 == 0 else "oddrow",),
+                )
+            except Exception as e:
+                print(f"Ошибка при обработке записи: {e}")
+                print(
+                    f"Проблемная запись: ID={id_item}, Товар={item_name}, "
+                    f"Дата={last_update_str}, Ссылка={link}"
+                )
+
+        def open_item_link(event):
+            selected_item = tree.selection()
+            if selected_item:
+                link = tree.item(selected_item[0])["values"][3]
+                if link:
+                    webbrowser.open(link)
+                else:
+                    tkinter.messagebox.showinfo(
+                        title="Информация",
+                        message="Ссылка для этого товара отсутствует.",
+                        parent=window,
+                    )
+
+        tree.bind("<Double-1>", open_item_link)
+
+        button_container = tkinter.Frame(main_container, bg="#f0f0f0")
+        button_container.pack(fill=tkinter.X, pady=(0, 10))
+
+        close_button = tkinter.Button(
+            master=button_container,
+            text="Закрыть",
+            font=("Helvetica", 12),
+            command=window.destroy,
+            bg="#0078D7",  #
+            fg="white",
+            activebackground="#006cc1",
+            activeforeground="white",
+            relief=tkinter.FLAT,
+            padx=30,
+            pady=8,
+            cursor="hand2",
+        )
+        close_button.pack(pady=10)
 
     def on_double_click(self, event):
         r = self.trwPB.focus()
