@@ -50,78 +50,146 @@ class Settings(ct.CTkToplevel):
                 con.close()
                 self.reload_aplication()
 
+    def _create_section(self, parent, title):
+        frame = ct.CTkFrame(parent, corner_radius=10)
+        frame.pack(pady=10, padx=10, fill="x")
+
+        label = ct.CTkLabel(
+            frame,
+            text=title,
+            font=("Arial", 14, "bold"),
+            anchor="w",
+        )
+        label.pack(pady=(10, 5), padx=10, fill="x")
+
+        return frame
+
+    def _add_tooltips(self):
+        tooltips = {
+            self.entry: "Минимум 60 секунд, максимум 100000 секунд",
+            self.entry_price_range_notification: "Должен быть больше или равен диапазону для сохранения",
+            self.entry_price_range_save_db: "Минимальное значение разницы цен для сохранения",
+            self.entry_min_reviews_count: "Минимальное количество отзывов для учета магазина",
+        }
+
+        def show_tooltip(event, text):
+            tooltip = tkinter.Toplevel()
+            tooltip.wm_overrideredirect(True)
+            tooltip.wm_geometry(f"+{event.x_root + 10}+{event.y_root + 10}")
+
+            label = tkinter.Label(
+                tooltip,
+                text=text,
+                justify="left",
+                background="#ffffe0",
+                relief="solid",
+                borderwidth=1,
+            )
+            label.pack()
+
+            def hide_tooltip():
+                tooltip.destroy()
+
+            event.widget.tooltip = tooltip
+            event.widget.after(2000, hide_tooltip)
+
+        def hide_tooltip(event):
+            if hasattr(event.widget, "tooltip"):
+                event.widget.tooltip.destroy()
+
+        for widget, text in tooltips.items():
+            widget.bind("<Enter>", lambda e, t=text: show_tooltip(e, t))
+            widget.bind("<Leave>", hide_tooltip)
+
     def init_ui(self):
         self.title("Настройки")
         window_width = 800
-        window_height = 530
+        window_height = 870
         self.geometry(
             f"{window_width}x{window_height}+{self.winfo_screenwidth() // 2 - window_width // 2}+{self.winfo_screenheight() // 2 - window_height // 2}"
         )
-        self.configure(bg="#f0f0f0")
 
         self.entry_menu = CustomEntry(self)
 
-        frame = ct.CTkFrame(self, corner_radius=10)
-        frame.pack(padx=20, pady=20, fill="both", expand=True)
+        main_frame = ct.CTkFrame(self, corner_radius=10)
+        main_frame.pack(padx=20, pady=20, fill="both", expand=True)
 
+        timing_frame = self._create_section(main_frame, "⏱ Настройки времени")
         self.label = ct.CTkLabel(
-            frame,
-            text="Введите новое значение интервала проверки цен (в секундах):",
+            timing_frame,
+            text="Интервал проверки цен (сек):",
             anchor="w",
         )
         self.label.pack(pady=10, padx=10, fill="x")
-
-        self.entry = ct.CTkEntry(frame, width=400, corner_radius=5)
+        self.entry = ct.CTkEntry(timing_frame, width=400, corner_radius=5)
         self.entry.pack(pady=5, padx=10, fill="x")
 
+        price_frame = self._create_section(main_frame, "💰 Настройки цен")
         self.label_price_range = ct.CTkLabel(
-            frame, text="Введите диапазон цен для уведомлений:", anchor="w"
+            price_frame,
+            text="Диапазон цен для уведомлений:",
+            anchor="w",
         )
         self.label_price_range.pack(pady=10, padx=10, fill="x")
-
         self.entry_price_range_notification = ct.CTkEntry(
-            frame, width=400, corner_radius=5
+            price_frame, width=400, corner_radius=5
         )
         self.entry_price_range_notification.pack(pady=5, padx=10, fill="x")
 
         self.label_price_range_save_db = ct.CTkLabel(
-            frame, text="Введите диапазон цен для сохранения в базу данных:", anchor="w"
+            price_frame,
+            text="Диапазон цен для сохранения в базу данных:",
+            anchor="w",
         )
         self.label_price_range_save_db.pack(pady=10, padx=10, fill="x")
-
-        self.entry_price_range_save_db = ct.CTkEntry(frame, width=400, corner_radius=5)
+        self.entry_price_range_save_db = ct.CTkEntry(
+            price_frame, width=400, corner_radius=5
+        )
         self.entry_price_range_save_db.pack(pady=5, padx=10, fill="x")
 
+        shop_frame = self._create_section(main_frame, "🏪 Настройки магазина Kaspi")
         self.label_min_reviews_count = ct.CTkLabel(
-            frame,
-            text="Введите минимальное количество отзывов у магазина Kaspi при проверке цен:",
+            shop_frame,
+            text="Минимальное количество отзывов:",
             anchor="w",
         )
         self.label_min_reviews_count.pack(pady=10, padx=10, fill="x")
-
-        self.entry_min_reviews_count = ct.CTkEntry(frame, width=400, corner_radius=5)
+        self.entry_min_reviews_count = ct.CTkEntry(
+            shop_frame, width=400, corner_radius=5
+        )
         self.entry_min_reviews_count.pack(pady=5, padx=10, fill="x")
 
+        additional_frame = self._create_section(
+            main_frame, "⚙️ Дополнительные настройки"
+        )
         self.checkbutton_enable_price_check_at_start = ct.CTkCheckBox(
-            frame,
-            text="Включить проверку цен при запуске программы",
+            additional_frame,
+            text="Включить проверку цен при запуске",
             variable=self.enable_price_check_var,
             onvalue="on",
             offvalue="off",
         )
-
         self.checkbutton_enable_price_check_at_start.pack(pady=10, padx=10, fill="x")
 
+        danger_frame = self._create_section(main_frame, "⚠️ Опасная зона")
         self.delete_data_button = ct.CTkButton(
-            frame,
-            text="⚠ Удалить все данные из базы данных",
+            danger_frame,
+            text="Удалить все данные из базы данных",
             command=self.delete_all_data_from_db,
             fg_color="red",
+            hover_color="#d32f2f",
         )
         self.delete_data_button.pack(pady=10, padx=10)
 
-        self.button = ct.CTkButton(frame, text="Сохранить", command=self.save_value)
-        self.button.pack(pady=10, padx=10)
+        self.button = ct.CTkButton(
+            main_frame,
+            text="💾 Сохранить настройки",
+            command=self.save_value,
+            height=40,
+        )
+        self.button.pack(pady=20, padx=10)
+
+        self._add_tooltips()
 
         for entry in (
             self.entry,
@@ -154,7 +222,6 @@ class Settings(ct.CTkToplevel):
         current_min_reviews_count = config.get(
             "DEFAULT", "MIN_REVIEWS_COUNT", fallback="Введите значение"
         )
-        # Assuming other setting load logic is correct...
         enable_price_check_at_start = config.get(
             "DEFAULT", "enable_price_check_at_start", fallback="off"
         )

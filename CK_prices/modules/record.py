@@ -373,7 +373,6 @@ class Recordtop(ct.CTkToplevel):
                         ),
                     )
         except sqlite3.DatabaseError as err:
-            # Ошибка обновления UI должна выполняться в основном потоке
             self.parent.after(
                 0,
                 lambda: ct.messagebox.showerror(
@@ -382,10 +381,8 @@ class Recordtop(ct.CTkToplevel):
                 ),
             )
         else:
-            # Подтверждение изменений и обновление данных в UI в основном потоке
             self.parent.after(0, self.parent.load_data)
         finally:
-            # Скрытие индикатора активности вне зависимости от результата операции
             self.parent.after(0, self.parent.hide_activity)
 
 
@@ -539,7 +536,6 @@ class Recordlink(ct.CTkToplevel):
                 )
 
         except sqlite3.DatabaseError as err:
-            # Для обновления интерфейса из фонового потока используйте self.after
             self.after(
                 0,
                 lambda: ct.messagebox.showerror(

@@ -23,7 +23,6 @@ from modules.config import CustomEntry, DBPath, Instruction
 from modules.products import Products
 
 
-
 config = configparser.ConfigParser()
 config.read("settings.ini")
 
@@ -107,8 +106,8 @@ class Application(ct.CTk):
                 self.deiconify()
                 self.icon.stop()
                 self.load_data()
-                self.lift()  # Поднимаем окно на передний план
-                self.focus_force()  # Принудительно устанавливаем фокус на окне
+                self.lift()
+                self.focus_force()
                 self.is_in_tray = False
                 self.after(0, self.update_activity_indicator)
                 logging.info("The application is out of the tray")
@@ -277,12 +276,22 @@ class Application(ct.CTk):
         self.trwPB.bind("<Double-1>", self.on_double_click)
 
         self.update_button = ct.CTkButton(
-            frm, text="Проверить данные", command=self.update
+            frm,
+            text="Проверить данные",
+            command=self.update,
+            fg_color="#28a745",
+            text_color="white",
         )
-        self.update_button.grid(row=0, column=3, padx=20, pady=5)
+        self.update_button.grid(row=0, column=3, padx=10, pady=5)
 
-        button = ct.CTkButton(frm, text="Товары", command=self.open_products_window)
-        button.grid(row=0, column=4, padx=20, pady=5)
+        button = ct.CTkButton(
+            frm,
+            text="Товары",
+            command=self.open_products_window,
+            fg_color="#ffc107",
+            text_color="black",
+        )
+        button.grid(row=0, column=4, padx=10, pady=5)
 
         self.activity_indicator = ct.CTkLabel(
             self, text="Проверка цен...", font=("Arial", 12)
@@ -726,5 +735,3 @@ class Application(ct.CTk):
         logging.info("Update from the application: finished")
         self.after(0, self.update_complete_callback)
         self.activity_indicator.grid_remove()
-
-

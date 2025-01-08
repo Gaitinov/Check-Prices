@@ -9,6 +9,7 @@ from modules.record import Recordtop
 from modules.record import Recordlink
 from modules.config import CustomEntry, DBPath, Instruction
 
+
 class Products(ct.CTkToplevel):
     app_title = "Check Prices"
 
@@ -243,7 +244,6 @@ class Products(ct.CTkToplevel):
             fg="#333333",
         )
         header.pack(pady=15)
-
 
         table_container = tkinter.Frame(
             main_container,
