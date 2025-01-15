@@ -329,45 +329,41 @@ class Application(ct.CTk):
         self.con.close()
 
     def get_last_price(self, id_item, current_time):
-        logging.info(
-            f"Fetching last price for item id_item={id_item}, current record time={current_time}"
-        )
+        logging.info(f"Fetching last price for item id_item={id_item}, current record time={current_time}")
 
         try:
             cur = self.con.cursor()
             cur.execute(
-                "SELECT price, time FROM prices WHERE id_item = ? ORDER BY time DESC",
+                "SELECT price, time FROM prices WHERE id_item = ?",
                 (id_item,),
             )
             all_records = cur.fetchall()
             logging.info(f"All records for id_item={id_item}: {all_records}")
 
+            if not all_records:
+                return None
+
             current_time_obj = datetime.strptime(current_time, "%m/%d/%Y %H:%M:%S")
             logging.info(f"Parsed current time: {current_time_obj}")
-            last_valid_price = None
 
-            for record in all_records:
-                price, record_time = record
-                record_time_obj = datetime.strptime(record_time, "%m/%d/%Y %H:%M:%S")
-                logging.info(f"Record time: {record_time_obj}, Price: {price}")
-
-                if record_time_obj == current_time_obj:
+            sorted_records = []
+            for price, time_str in all_records:
+                try:
+                    time_obj = datetime.strptime(time_str, "%m/%d/%Y %H:%M:%S")
+                    sorted_records.append((price, time_obj))
+                except ValueError as e:
+                    logging.error(f"Error parsing time {time_str}: {e}")
                     continue
 
-                if record_time_obj < current_time_obj:
-                    last_valid_price = price
-                    break
+            sorted_records.sort(key=lambda x: x[1], reverse=True)
 
-            if last_valid_price is not None:
-                logging.info(
-                    f"Last valid price for id_item={id_item}: {last_valid_price}"
-                )
-                return last_valid_price
-            else:
-                logging.warning(
-                    f"No previous record found for id_item={id_item} with time < {current_time}"
-                )
-                return None
+            for price, record_time_obj in sorted_records:
+                if record_time_obj < current_time_obj:
+                    logging.info(f"Found last valid price for id_item={id_item}: {price}")
+                    return price
+
+            logging.warning(f"No previous record found for id_item={id_item} with time < {current_time}")
+            return None
 
         except Exception as e:
             logging.error(f"Error in get_last_price for id_item={id_item}: {e}")
