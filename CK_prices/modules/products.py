@@ -191,17 +191,18 @@ class Products(ct.CTkToplevel):
 
         cur.execute(
             """
-            WITH LatestRecords AS (
+           WITH LatestRecords AS (
                 SELECT 
                     p1.id_item,
                     p1.item,
                     p1.time as last_update,
                     p1.link
                 FROM prices p1
+                INNER JOIN items i ON p1.id_item = i.id_item
                 WHERE p1.time = (
                     SELECT MAX(p2.time)
                     FROM prices p2
-                    WHERE p2.item = p1.item
+                    WHERE p2.id_item = p1.id_item
                 )
             )
             SELECT 
