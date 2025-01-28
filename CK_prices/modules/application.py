@@ -329,7 +329,6 @@ class Application(ct.CTk):
         self.con.close()
 
     def get_last_price(self, id_item, current_time):
-        logging.info(f"Fetching last price for item id_item={id_item}, current record time={current_time}")
 
         try:
             cur = self.con.cursor()
@@ -338,13 +337,11 @@ class Application(ct.CTk):
                 (id_item,),
             )
             all_records = cur.fetchall()
-            logging.info(f"All records for id_item={id_item}: {all_records}")
 
             if not all_records:
                 return None
 
             current_time_obj = datetime.strptime(current_time, "%m/%d/%Y %H:%M:%S")
-            logging.info(f"Parsed current time: {current_time_obj}")
 
             sorted_records = []
             for price, time_str in all_records:
@@ -359,7 +356,6 @@ class Application(ct.CTk):
 
             for price, record_time_obj in sorted_records:
                 if record_time_obj < current_time_obj:
-                    logging.info(f"Found last valid price for id_item={id_item}: {price}")
                     return price
 
             logging.warning(f"No previous record found for id_item={id_item} with time < {current_time}")
