@@ -21,6 +21,7 @@ from modules.settings import Settings
 from modules.product_info_extractor import extract_product_info
 from modules.config import CustomEntry, DBPath, Instruction
 from modules.products import Products
+from tkinter import Toplevel, Frame, Label, BOTH, RIGHT, Y, X, Scrollbar, END, Menu #
 
 
 config = configparser.ConfigParser()
@@ -293,6 +294,15 @@ class Application(ct.CTk):
         )
         button.grid(row=0, column=4, padx=10, pady=5)
 
+        best_price_drop_button = ct.CTkButton(
+            frm,
+            text="Лучшие скидки",
+            command=self.show_best_price_drops,
+            fg_color="#007bff",
+            text_color="white",
+        )
+        best_price_drop_button.grid(row=0, column=5, padx=10, pady=5)
+
         self.activity_indicator = ct.CTkLabel(
             self, text="Проверка цен...", font=("Arial", 12)
         )
@@ -304,6 +314,7 @@ class Application(ct.CTk):
         context_menu.add_command(label="Добавить", command=self.add_record)
         context_menu.add_command(label="Изменить", command=self.edit_record)
         context_menu.add_command(label="Удалить", command=self.delete_record)
+        self.best_drops_context_menu = context_menu
 
         def show_context_menu(event):
             row_id = self.trwPB.identify_row(event.y)
@@ -727,3 +738,225 @@ class Application(ct.CTk):
         logging.info("Update from the application: finished")
         self.after(0, self.update_complete_callback)
         self.activity_indicator.grid_remove()
+
+    def show_best_price_drops(self):
+        best_drops_window = Toplevel(self)
+        best_drops_window.title("Лучшие скидки")
+        window_width = 1600
+        window_height = 900
+        best_drops_window.geometry(f"{window_width}x{window_height}")
+
+        best_drops_window.configure(bg="#f0f0f0")
+
+        screen_width = best_drops_window.winfo_screenwidth()
+        screen_height = best_drops_window.winfo_screenheight()
+        x = (screen_width // 2) - (window_width // 2)
+        y = (screen_height // 2) - (window_height // 2)
+        best_drops_window.geometry(f"+{x}+{y}")
+
+        main_container = Frame(best_drops_window, bg="#f0f0f0")
+        main_container.pack(fill=BOTH, expand=True, padx=10, pady=10)
+
+        header = Label(
+            master=main_container,
+            text="Лучшие снижения цен",
+            font=("Helvetica", 18, "bold"),
+            bg="#f0f0f0",
+            fg="#2e2e2e"
+        )
+        header.pack(pady=10)
+
+        table_container = Frame(
+            main_container,
+            bg="white",
+            highlightbackground="#c0c0c0",
+            highlightthickness=0,
+            bd=1
+        )
+        table_container.pack(fill=BOTH, expand=True, pady=(0, 10))
+
+        tree_frame = Frame(table_container)
+        tree_frame.pack(fill=BOTH, expand=True, padx=0, pady=0)
+
+        self.best_drops_tree = tkinter.ttk.Treeview(
+            table_container,
+            columns=("item", "drop_abs", "drop_percent", "initial_price", "final_price", "time_change", "link"),
+            show="headings",
+            style="Custom.Treeview"
+        )
+
+        self.best_drops_tree.heading("item", text="Товар")
+        self.best_drops_tree.heading("drop_abs", text="Абс. скидка")
+        self.best_drops_tree.heading("drop_percent", text="Скидка %")
+        self.best_drops_tree.heading("initial_price", text="Начальная цена")
+        self.best_drops_tree.heading("final_price", text="Конечная цена")
+        self.best_drops_tree.heading("time_change", text="Время изменения")
+        self.best_drops_tree.heading("link", text="Ссылка")
+
+        tree_style = tkinter.ttk.Style()
+        tree_style.configure("Custom.Treeview.Heading", font=('Helvetica', 10, 'bold'),
+                             padding=(0, 5))
+        tree_style.configure("Custom.Treeview", rowheight=25, padding=(0, 2))
+
+        self.best_drops_tree.tag_configure("oddrow", background="#f9f9f9")
+        self.best_drops_tree.tag_configure("evenrow", background="white")
+
+        vsb = Scrollbar(tree_frame, orient="vertical", command=self.best_drops_tree.yview)
+        vsb.pack(side=RIGHT, fill=Y)
+        hsb = Scrollbar(tree_frame, orient="horizontal", command=self.best_drops_tree.xview)
+        hsb.pack(side="bottom", fill=X, in_=tree_frame)
+
+        self.best_drops_tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        self.best_drops_tree.pack(fill=BOTH, expand=True)
+
+        best_drops_tree_context_menu = Menu(self.best_drops_tree, tearoff=0)
+        best_drops_tree_context_menu.add_command(label="Создать график", command=self.create_graph_from_best_drops)
+
+        def show_best_drops_context_menu(event):
+            row_id = self.best_drops_tree.identify_row(event.y)
+            if row_id:
+                self.best_drops_tree.selection_set(row_id)
+                self.best_drops_tree.focus(row_id)
+                best_drops_tree_context_menu.post(event.x_root, event.y_root)
+
+        self.best_drops_tree.bind("<Button-3>", show_best_drops_context_menu)
+        self.best_drops_tree.bind("<Double-1>", self.on_best_drops_double_click)
+
+        close_button = ct.CTkButton(
+            main_container,
+            text="Закрыть",
+            command=best_drops_window.destroy,
+            fg_color="#007bff",
+            text_color="white",
+            font=("Helvetica", 14, "bold"),
+            corner_radius=8,
+            width=150,
+            height=40
+        )
+        close_button.pack(pady=(15, 0), anchor="s", side="bottom", fill=X)
+
+        cur = self.con.cursor()
+        cur.execute("SELECT id_item, item, link FROM items")
+        items_in_table = {item[0]: (item[1], item[2]) for item in cur.fetchall()}
+
+        cur.execute("SELECT id_item, item, price, time FROM prices ORDER BY id_item, time")
+        all_prices = cur.fetchall()
+
+        item_prices = {}
+        for id_item, item_name_db, price_str, time_str in all_prices:
+            if id_item not in items_in_table:
+                continue
+            try:
+                price = float(price_str)
+                time = datetime.strptime(time_str, "%m/%d/%Y %H:%M:%S")
+                if id_item not in item_prices:
+                    item_prices[id_item] = {"item_name": items_in_table[id_item][0], "link": items_in_table[id_item][1],
+                                            "prices": []}
+                item_prices[id_item]["prices"].append({"price": price, "time": time})
+            except ValueError:
+                logging.warning(f"Skipping invalid price or date format for item {id_item}")
+
+        calculated_drops = []
+
+        for id_item_data in item_prices.values():
+            prices_data = sorted(id_item_data["prices"], key=lambda x: x["time"])
+            if len(prices_data) < 2:
+                continue
+
+            last_price_data = prices_data[-1]
+            previous_price_data = prices_data[-2]
+
+            current_price = last_price_data["price"]
+            previous_price = previous_price_data["price"]
+
+            if previous_price > current_price and current_price > 0:
+                price_drop_abs = previous_price - current_price
+                price_drop_percent = (price_drop_abs / previous_price) * 100
+
+                calculated_drops.append({
+                    "item_name": id_item_data["item_name"],
+                    "drop_abs": price_drop_abs,
+                    "drop_percent": price_drop_percent,
+                    "initial_price": previous_price,
+                    "final_price": current_price,
+                    "time_final": last_price_data["time"],
+                    "link": id_item_data["link"]
+                })
+
+        calculated_drops.sort(key=lambda x: (x["drop_abs"], x["drop_percent"]), reverse=True)
+
+        if not calculated_drops:
+            tkinter.messagebox.showinfo(Application.app_title, "Нет данных об изменении цен.", parent=best_drops_window)
+            return
+
+        for idx, drop in enumerate(calculated_drops):
+            self.best_drops_tree.insert("", END, values=(
+                drop['item_name'],
+                f"{drop['drop_abs']:.2f}",
+                f"{drop['drop_percent']:.2f}%",
+                f"{drop['initial_price']:.2f}",
+                f"{drop['final_price']:.2f}",
+                drop['time_final'].strftime('%m/%d/%Y %H:%M:%S'),
+                drop['link']
+            ), tags=("evenrow" if idx % 2 == 0 else "oddrow",))
+
+        best_drops_window.update_idletasks()
+        screen_width = best_drops_window.winfo_screenwidth()
+        screen_height = best_drops_window.winfo_screenheight()
+        x = (screen_width // 2) - (best_drops_window.winfo_width() // 2)
+        y = (screen_height // 2) - (best_drops_window.winfo_height() // 2)
+        best_drops_window.geometry(f"+{x}+{y}")
+
+
+    def create_graph_from_best_drops(self):
+        r = self.best_drops_tree.focus()
+        if r:
+            selected_item_values = self.best_drops_tree.item(r, option="values")
+            item_name = selected_item_values[0]
+            link = selected_item_values[6]
+            if link:
+                cur = self.con.cursor()
+                prices = cur.execute(
+                    f"select price from prices WHERE link = '{link}'"
+                ).fetchall()
+                prices = [x[0] for x in prices]
+                timeall = cur.execute(
+                    f"select time from prices WHERE link = '{link}'"
+                ).fetchall()
+                timeall = [x[0] for x in timeall]
+
+                if len(prices) < 2:
+                    tkinter.messagebox.showerror(
+                        "Ошибка",
+                        "Для создания графика требуется как минимум две записи",
+                        parent=self,
+                    )
+                else:
+                    fig = go.Figure(
+                        data=go.Scatter(
+                            x=timeall, y=prices, mode="lines+markers", name="Цены"
+                        )
+                    )
+                    fig.update_layout(
+                        title=f"<a href='{link}'>{item_name}</a>",
+                        xaxis_title="Время",
+                        yaxis_title="Цена",
+                    )
+                    fig.write_html("graph.html")
+                    webbrowser.open("file://" + os.path.realpath("graph.html"))
+
+                self.con.commit()
+            else:
+                tkinter.messagebox.showerror("Ошибка", "Ссылка на товар не найдена.", parent=self)
+        else:
+            tkinter.messagebox.showerror("Ошибка", "Выберите товар для создания графика.", parent=self)
+
+    def on_best_drops_double_click(self, event):
+        r = self.best_drops_tree.focus()
+        if r:
+            selected_item_values = self.best_drops_tree.item(r, option="values")
+            url = selected_item_values[6]
+            if url:
+                webbrowser.open(url)
+            else:
+                tkinter.messagebox.showerror("Ошибка", "Ссылка на товар не найдена.", parent=self)
