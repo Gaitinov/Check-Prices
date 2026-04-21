@@ -4,5 +4,5 @@ Pillow==10.3.0
 playwright==1.40.0
 plotly==5.18.0
 pystray==0.19.5
-Requests==2.31.0
+Requests==2.33.0
 winotify==1.1.0
